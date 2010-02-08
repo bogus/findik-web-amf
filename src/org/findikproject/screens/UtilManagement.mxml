@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" 
+	xmlns:views="org.findikproject.views.*">
+<!--
+<components:ACLManagementCanvas>
+</components:ACLManagementCanvas>
+
+<components:MimeTypePanel>
+</components:MimeTypePanel>
+
+<components:ContentDraggablePanel>
+</components:ContentDraggablePanel>
+-->
+<views:IPDraggablePanel>
+</views:IPDraggablePanel>
+
+<views:TimeTableDraggablePanel>	
+</views:TimeTableDraggablePanel>
+</mx:Canvas>

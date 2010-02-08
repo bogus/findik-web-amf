@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DraggablePanel xmlns="org.findikproject.components.*" xmlns:mx="http://www.adobe.com/2006/mxml"
+	width="1056" height="672" xmlns:validators="org.findikproject.validators.*" layout="absolute"
+	title="{resourceManager.getString('resources', 'content.title')}"
+	titleIcon="@Embed('/assets/images/icons/16x16/internet.png')" 
+	backgroundImage="@Embed('/assets/images/icons/internet.png')"
+	backgroundSize="200px">
+<mx:Metadata>
+	[ResourceBundle("resources")]
+</mx:Metadata>
+
+<mx:Script>
+<![CDATA[
+   import org.findikproject.beans.VOContentSearch;
+   import org.findikproject.components.DoubleClickDataGrid;
+   import org.findikproject.beans.VOContentCategory;
+   import org.findikproject.beans.VOContentDomain;
+   import org.findikproject.beans.VOContentURL;
+   import org.findikproject.beans.VOContentRegex;
+   import mx.controls.dataGridClasses.DataGridColumn;
+   import mx.events.DataGridEvent;
+   import mx.events.CloseEvent;
+   import mx.controls.Alert;
+   import mx.rpc.events.FaultEvent;
+   import mx.rpc.events.ResultEvent;
+   import mx.collections.ArrayCollection;
+   import mx.events.ResourceEvent;
+   import mx.events.ValidationResultEvent;
+   import mx.core.IUIComponent;
+   import mx.events.DragEvent;
+   import mx.managers.DragManager;
+   import mx.collections.IViewCursor;
+   
+   private var selectedCategoryId:int = 0;
+   private var searchKeyData:String = null;
+   private var searchTypesSelected:ArrayCollection;
+   
+    private function deleteDragEnter(event:DragEvent):void {
+	    var obj:IUIComponent = IUIComponent(event.currentTarget);
+	    DragManager.acceptDragDrop(obj);
+	}
+	
+	private function deleteDragDrop(event:DragEvent):void {
+		if (event.dragSource.hasFormat("items"))
+	    {		    	
+	    	var itemsArray:Array = event.dragSource.dataForFormat("items") as Array;
+	    	var dataGrid:DoubleClickDataGrid = event.dragInitiator as DoubleClickDataGrid;
+	    	var cursor:IViewCursor = catGrid.dataProvider.createCursor();
+	    	var arrList:ArrayCollection = new ArrayCollection();
+	    	if (dataGrid.id == "catGrid") {
+	    		var i:int = 0;
+	    		for(;i < itemsArray.length;i++) {
+		    		var catVal:VOContentCategory = new VOContentCategory();
+		        	catVal.id = itemsArray[i].id;
+		        	catVal.name = itemsArray[i].name;
+		        	if(selectedCategoryId == catVal.id) {
+		    			domainGrid.dataProvider = null;
+		    			urlGrid.dataProvider = null;
+		    			regexGrid.dataProvider = null;
+				   		selectedCategoryId = 0;
+				   		selectedCategoryName.text = resourceManager.getString('resources', 'content.selectedcat');
+		    		}
+		    		arrList.addItem(catVal);
+	      		}
+	    		catGrid.remove(arrList.toArray());
+	        } else {
+	        	if (dataGrid.id == "domainGrid")
+	        		domainGrid.remove(itemsArray);
+	        	else if (dataGrid.id == "urlGrid")
+	        		urlGrid.remove(itemsArray);
+				else if (dataGrid.id == "regexGrid")
+	        		regexGrid.remove(itemsArray);   	        	 		
+	        	while(!cursor.afterLast) {
+					if(cursor.current.id == selectedCategoryId) {
+						if(dataGrid.id == "domainGrid")
+							cursor.current.domainCount-=itemsArray.length;
+						else if(dataGrid.id == "urlGrid")
+							cursor.current.urlCount-=itemsArray.length;
+						else if(dataGrid.id == "regexGrid")
+							cursor.current.regexCount-=itemsArray.length;
+						break;
+					}
+					cursor.moveNext();
+				}
+	        }
+		}
+	}
+	
+   private function add():void {
+   		if(newDataValidator.validate().type == ValidationResultEvent.VALID) {
+   			var cursor:IViewCursor = catGrid.dataProvider.createCursor();
+	   		var reg:RegExp = /\r| /;
+	   		var lines:Array = newData.text.split(reg);
+	   		var arr:ArrayCollection =  new ArrayCollection();
+	   		var i:int = 0;
+	   		if(typeCombo.selectedIndex == 0)  { 			
+	   			for(;i < lines.length ;i++) {
+	   				var catVal:VOContentCategory = new VOContentCategory();
+	   				catVal.id = 0;
+	   				catVal.name = lines[i];
+	   				arr.addItem(catVal);
+	   			}
+	   			catGrid.insert(arr.toArray());
+	   		} else if(selectedCategoryId != 0) {
+	   			if(typeCombo.selectedIndex == 1)  {
+		   			for(;i < lines.length ;i++) {
+		   				var domVal:VOContentDomain = new VOContentDomain();
+		   				domVal.id = 0;
+		   				domVal.catId = selectedCategoryId;
+		   				domVal.domain = lines[i];
+		   				arr.addItem(domVal);
+		   			}
+		   			domainGrid.insert(arr.toArray());
+	   			} else if(typeCombo.selectedIndex == 2)  {
+		   			for(;i < lines.length ;i++) {
+		   				var val:VOContentURL = new VOContentURL();
+			   			val.id = 0;
+			   			val.catId = selectedCategoryId;
+		   				val.url = lines[i];
+		   				arr.addItem(val);
+		   			}
+		   			urlGrid.insert(arr.toArray());
+	   			} else if(typeCombo.selectedIndex == 3)  {
+		   			for(;i < lines.length ;i++) {
+		   				var valrx:VOContentRegex = new VOContentRegex();
+			   			valrx.id = 0;
+			   			valrx.catId = selectedCategoryId;
+		   				valrx.regex = lines[i];
+		   				arr.addItem(valrx);
+		   			}
+		   			regexGrid.insert(arr.toArray());
+	   			}
+	   			while(!cursor.afterLast) {
+					if(cursor.current.id == selectedCategoryId) {
+						if(typeCombo.selectedIndex == 1)
+							cursor.current.domainCount+=lines.length;
+						else if(typeCombo.selectedIndex == 2)
+							cursor.current.urlCount+=lines.length;
+						else if(typeCombo.selectedIndex == 3)
+							cursor.current.regexCount+=lines.length;
+						break;
+					}
+					cursor.moveNext();
+				}
+	   		} else {
+	   			Alert.show(resourceManager.getString('resources','content.addnocatwarning'));
+	   		}
+	   		newData.text = "";	
+   		}
+   }
+   
+   private function search():void {
+   		if(searchKeyValidator.validate().type == ValidationResultEvent.VALID) {
+	   		searchTypesSelected = new ArrayCollection();
+	   		if(searchAll.selected)
+	   			selectedCategoryId = 0;
+	   		searchKeyData = searchKey.text; 
+	   		if(categoryCheckbox.selected) {
+	   			catGrid.search(searchKeyData);
+	   		}    			
+	   		if(domainCheckbox.selected) {
+	   			domainGrid.search(searchKeyData, selectedCategoryId);
+	   		} else {
+	   			domainGrid.search(null,0);
+	   		}
+			if(urlCheckbox.selected){
+	   			urlGrid.search(searchKeyData, selectedCategoryId);
+	   		} else {
+	   			urlGrid.search(null,0);
+	   		}
+			if(regexCheckbox.selected){
+	   			regexGrid.search(searchKeyData, selectedCategoryId);
+	   		} else {
+	   			regexGrid.search(null,0);
+	   		}
+	   			
+	   		selectedCategoryName.text = resourceManager.getString('resources', 'content.searchkey') + ": "
+				+ searchKeyData;
+   		}
+   }
+   
+   private function clearSearch():void {
+   		searchKeyData = null;
+   		catGrid.getGridData();
+   		domainGrid.dataProvider = null;
+   		urlGrid.dataProvider = null;
+   		regexGrid.dataProvider = null;
+   		searchKey.text = "";
+   		categoryCheckbox.selected = false;
+   		domainCheckbox.selected = false;
+   		urlCheckbox.selected = false;
+   		regexCheckbox.selected = false;
+   		selectedCategoryName.text = resourceManager.getString('resources', 'content.selectedcat');
+   }
+	
+ 	private function changeSelectedCategory():void {
+		selectedCategoryId = catGrid.selectedItem.id;
+		searchKeyData = null;
+		domainGrid.changeSelectedCategory(selectedCategoryId, catGrid.selectedItem.domainCount);
+		urlGrid.changeSelectedCategory(selectedCategoryId, catGrid.selectedItem.urlCount);
+		regexGrid.changeSelectedCategory(selectedCategoryId, catGrid.selectedItem.regexCount);
+		selectedCategoryName.text = resourceManager.getString('resources', 'content.selectedcat')
+			+ ": " + catGrid.selectedItem.name.toString();
+	}
+]]>
+</mx:Script>
+			
+	<mx:Image id="image"
+			        source="@Embed('/assets/images/remove.png')" 
+			        dragDrop="deleteDragDrop(event);" dragEnter="deleteDragEnter(event);"
+			        x="968" y="524" width="64" height="64"/>
+
+	<RemoteDoubleClickDataGrid width="291" height="365" rowCount="4" id="catGrid" alpha="0.5"
+				dragEnabled="true" editable="true" dropEnabled="false" 
+				x="0" y="0" allowMultipleSelection="true"
+				remoteDestination="zend" remoteSource="ContentCategoryService"
+				statusLabel="{resultLabel}" statusImage="{resultImage}"
+				creationComplete="catGrid.init();">				
+			<columns>
+				<mx:DataGridColumn dataField="id" editable="false" visible="false"/>
+				<mx:DataGridColumn dataField="name" width="100" editable="true" headerText="{resourceManager.getString('resources', 'content.catname')}"/>
+				<mx:DataGridColumn dataField="domainCount" editable="false" headerText="{resourceManager.getString('resources', 'content.domainCount')}"/>
+				<mx:DataGridColumn dataField="urlCount" editable="false" headerText="{resourceManager.getString('resources', 'content.urlCount')}"/>
+				<mx:DataGridColumn dataField="regexCount" editable="false" headerText="{resourceManager.getString('resources', 'content.regexCount')}"/>
+			</columns>
+	</RemoteDoubleClickDataGrid>
+	
+	<PaginatedDoubleClickDataGrid width="350" height="162" rowCount="4" id="domainGrid" alpha="0.5"
+				dragEnabled="true" editable="true" remoteSource="ContentDomainService" 
+				remoteDestination="zend" paginationCanvas="{domainPagination}"
+				statusLabel="{resultLabel}" statusImage="{resultImage}"
+				dropEnabled="false" x="299" y="37" creationComplete="domainGrid.init();">				
+			<columns>
+				<mx:DataGridColumn dataField="id" editable="false" visible="false"/>
+				<mx:DataGridColumn dataField="catId" editable="false" visible="false"/>
+				<mx:DataGridColumn dataField="domain" width="100" editable="true" headerText="{resourceManager.getString('resources', 'content.domain')}"/>
+			</columns>
+	</PaginatedDoubleClickDataGrid>
+	
+	<PaginatedDoubleClickDataGrid width="375" height="162" rowCount="4" id="urlGrid" alpha="0.5"
+				dragEnabled="true" editable="true" remoteSource="ContentURLService" 
+				remoteDestination="zend" paginationCanvas="{urlPagination}"
+				statusLabel="{resultLabel}" statusImage="{resultImage}"
+				dropEnabled="false" x="657" y="37" creationComplete="urlGrid.init();"
+				allowMultipleSelection="true">				
+			<columns>
+				<mx:DataGridColumn dataField="id" editable="false" visible="false"/>
+				<mx:DataGridColumn dataField="catId" editable="false" visible="false"/>
+				<mx:DataGridColumn dataField="url" width="100" editable="true" headerText="{resourceManager.getString('resources', 'content.url')}"/>
+			</columns>
+	</PaginatedDoubleClickDataGrid>
+	
+	<PaginatedDoubleClickDataGrid width="733" height="162" rowCount="4" id="regexGrid" alpha="0.5"
+				dragEnabled="true" editable="true" remoteSource="ContentRegexService" 
+				remoteDestination="zend" paginationCanvas="{regexPagination}"
+				statusLabel="{resultLabel}" statusImage="{resultImage}"
+				dropEnabled="false" x="299" y="234" creationComplete="regexGrid.init();"
+				allowMultipleSelection="true">				
+			<columns>
+				<mx:DataGridColumn dataField="id" editable="false" visible="false"/>
+				<mx:DataGridColumn dataField="catId" editable="false" visible="false"/>
+				<mx:DataGridColumn dataField="regex" width="100" editable="true" headerText="{resourceManager.getString('resources', 'content.regex')}"/>
+			</columns>
+	</PaginatedDoubleClickDataGrid>
+	
+	<mx:HRule x="299" y="30" width="733"/>
+	<mx:Label x="299" y="6" text="{resourceManager.getString('resources', 'content.selectedcat')}" id="selectedCategoryName"/>
+	<mx:Button x="10" y="374" label="{resourceManager.getString('resources', 'content.selectcat')}" width="161"
+		click="changeSelectedCategory();" icon="@Embed('/assets/images/icons/16x16/outbox.png')"/>
+		
+	<PaginationCanvas x="299" y="198" width="350" id="domainPagination" pageElementCount="20" 
+		dataGrid="{domainGrid}"/>
+	<PaginationCanvas x="680" y="198" width="353" id="urlPagination" pageElementCount="20" 
+		dataGrid="{urlGrid}"/>
+	<PaginationCanvas x="680" y="395" width="352" id="regexPagination" pageElementCount="20"
+		dataGrid="{regexGrid}" />
+		
+	
+	<mx:Form x="3" y="422" width="340" height="173" cornerRadius="3" borderStyle="solid" 
+		borderThickness="2" backgroundColor="#F3F3F3" paddingTop="3" paddingBottom="3">
+		<mx:FormHeading label="{resourceManager.getString('resources', 'form.addformheader')}" textAlign="left"/>
+		<mx:FormItem label="{resourceManager.getString('resources', 'form.type')}">
+			<mx:ComboBox width="130" id="typeCombo">
+				<mx:dataProvider>
+					<mx:Array>
+						<mx:String id="cat">{resourceManager.getString('resources', 'content.category')}</mx:String>
+						<mx:String id="domain">{resourceManager.getString('resources', 'content.domain')}</mx:String>
+						<mx:String id="url">{resourceManager.getString('resources', 'content.url')}</mx:String>
+						<mx:String id="regex">{resourceManager.getString('resources', 'content.regex')}</mx:String>
+					</mx:Array>
+				</mx:dataProvider>
+			</mx:ComboBox>
+		</mx:FormItem>
+		<mx:FormItem label="{resourceManager.getString('resources', 'content.value')}" height="64">
+			<mx:TextArea width="232" id="newData" height="64" />
+		</mx:FormItem>
+		<mx:FormItem>
+			<mx:Button label="{resourceManager.getString('resources', 'content.add')}" 
+				click="add();" icon="@Embed('/assets/images/icons/16x16/edit_add.png')"/>
+		</mx:FormItem>
+	</mx:Form>
+	<mx:Form x="346" y="422" width="360" height="173" borderStyle="solid" cornerRadius="3" borderThickness="2" backgroundColor="#F3F3F3" paddingTop="3" paddingBottom="3">
+		<mx:FormHeading label="{resourceManager.getString('resources', 'form.search')}" textAlign="left"/>
+		<mx:FormItem label="{resourceManager.getString('resources', 'form.searchkey')}">
+			<mx:TextInput width="150" id="searchKey" />
+		</mx:FormItem>
+		<mx:FormItem label="{resourceManager.getString('resources', 'form.type')}">
+			<mx:Canvas>
+				<mx:CheckBox label="{resourceManager.getString('resources', 'content.category')}" x="0" y="0" id="categoryCheckbox"/>
+				<mx:CheckBox label="{resourceManager.getString('resources', 'content.domain')}" x="0" y="20" id="domainCheckbox"/>
+				<mx:CheckBox label="{resourceManager.getString('resources', 'content.url')}" x="100" y="0" id="urlCheckbox"/>
+				<mx:CheckBox label="{resourceManager.getString('resources', 'content.regex')}" x="100" y="20" id="regexCheckbox"/>
+			</mx:Canvas>
+		</mx:FormItem>
+		<mx:FormItem label="{resourceManager.getString('resources', 'form.searchscope')}">
+			<mx:Canvas>
+				<mx:RadioButtonGroup id="searchScope" />
+				<mx:RadioButton groupName="searchScope" id="searchAll" label="{resourceManager.getString('resources', 'form.searchall')}"
+					selected="true" />
+				<mx:RadioButton x="90" groupName="searchScope" id="searchSelected" label="{resourceManager.getString('resources', 'form.searchselected')}" />					
+			</mx:Canvas>
+		</mx:FormItem>
+		<mx:FormItem>
+			<mx:Canvas>
+				<mx:Button label="{resourceManager.getString('resources', 'form.search')}" 
+					click="search();" icon="@Embed('/assets/images/icons/16x16/xmag.png')"/>
+				<mx:Button x="90" label="{resourceManager.getString('resources', 'form.clearsearch')}" 
+					click="clearSearch();" icon="@Embed('/assets/images/icons/16x16/recur.png')"/>
+			</mx:Canvas>		
+		</mx:FormItem>
+	</mx:Form>
+	<mx:StringValidator id="newDataValidator" required="true" source="{newData}" property="text"/>
+	<mx:StringValidator id="searchKeyValidator" required="true" minLength="3" source="{searchKey}" property="text"/>
+	<mx:ControlBar horizontalAlign="right">
+		<mx:Image width="16" height="16" id="resultImage"/>
+		<mx:Label id="resultLabel"/>
+	</mx:ControlBar>
+</DraggablePanel>

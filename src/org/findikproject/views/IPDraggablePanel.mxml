@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DraggablePanel xmlns="org.findikproject.components.*" xmlns:mx="http://www.adobe.com/2006/mxml"
+	width="600" height="410" xmlns:validators="org.findikproject.validators.*" layout="absolute"
+	title="{resourceManager.getString('resources', 'ipman.title')}"
+	titleIcon="@Embed('/assets/images/icons/16x16/package_network.png')" 
+	backgroundImage="@Embed('/assets/images/icons/Internet Connection Tools.png')"
+	backgroundSize="200px">
+<mx:Metadata>
+	[ResourceBundle("resources")]
+</mx:Metadata>
+
+<mx:Script>
+<![CDATA[
+   import org.findikproject.components.DoubleClickDataGrid;
+   import org.findikproject.beans.VOIPTable;
+   import mx.controls.dataGridClasses.DataGridColumn;
+   import mx.events.DataGridEvent;
+   import mx.events.CloseEvent;
+   import mx.controls.Alert;
+   import mx.rpc.events.FaultEvent;
+   import mx.rpc.events.ResultEvent;
+   import mx.collections.ArrayCollection;
+   import mx.events.ResourceEvent;
+   import mx.events.ValidationResultEvent;
+   import mx.core.IUIComponent;
+   import mx.events.DragEvent;
+   import mx.managers.DragManager;
+   
+   private function addIPVal():void {
+   		var events:Array = new Array(nameValidator.validate().type, localIpValidator.validate().type,
+   			localMaskValidator.validate().type);	   		
+   		var result:Boolean = true;
+   		
+   		for(var i:Number=0; i < events.length; i++)
+   			 result = (result && (events[i] == ValidationResultEvent.VALID));
+   		
+   		if(result) {   			
+   			var ipVal:VOIPTable = new VOIPTable();
+   			ipVal.id = 0;
+   			ipVal.name = ipname.text;
+   			ipVal.localIp = localIp.text;
+   			ipVal.localMask = localMask.text;
+   			var arrList:ArrayCollection = new ArrayCollection();
+   			arrList.addItem(ipVal);
+   			dataGrid.insert(arrList.toArray());
+   		} 
+   }
+   
+   private function deleteDragEnter(event:DragEvent):void {
+	    var obj:IUIComponent = IUIComponent(event.currentTarget);
+	    DragManager.acceptDragDrop(obj);
+	}
+	
+	private function deleteDragDrop(event:DragEvent):void {
+		if (event.dragSource.hasFormat("items"))
+	    {
+	    	var itemsArray:Array = event.dragSource.dataForFormat("items") as Array;
+			dataGrid.remove(itemsArray);
+		}
+	}
+]]>
+</mx:Script>
+	<mx:Form id="newIPVal" width="239" height="214" x="341">
+		<mx:FormItem width="202">
+			<mx:Text text="{resourceManager.getString('resources', 'ipman.name')}"/>
+			<mx:TextInput id="ipname" x="109" y="321"/>		
+		</mx:FormItem>
+		<mx:FormItem width="202">
+			<mx:Text text="{resourceManager.getString('resources', 'ipman.localip')}"/>
+			<mx:TextInput id="localIp" x="109" y="321"/>		
+		</mx:FormItem>
+		<mx:FormItem width="202">
+			<mx:Text text="{resourceManager.getString('resources', 'ipman.localmask')}"/>
+			<mx:TextInput id="localMask" x="109" y="321"/>		
+		</mx:FormItem>
+		<mx:FormItem>
+			<mx:Button label="{resourceManager.getString('resources', 'ipman.add')}" 
+				click="addIPVal();"	x="287" y="321" icon="@Embed('/assets/images/icons/16x16/edit_add.png')"></mx:Button>		
+		</mx:FormItem>
+	</mx:Form>
+	<mx:Image id="image"
+			        source="@Embed('/assets/images/remove.png')" 
+			        dragDrop="deleteDragDrop(event);" dragEnter="deleteDragEnter(event);"
+			        x="502.75" y="252" width="64" height="64"/>
+			        
+	
+<mx:StringValidator source="{ipname}" property="text" maxLength="32" required="true" id="nameValidator" />
+<validators:IPAddressValidator source="{localIp}" property="text"  required="true" id="localIpValidator" />
+<validators:IPAddressValidator source="{localMask}" property="text"  required="true" id="localMaskValidator" />
+
+	<RemoteDoubleClickDataGrid width="333" height="338" rowCount="4" id="dataGrid" alpha="0.5"
+				dragEnabled="true" editable="true"
+				remoteDestination="zend" remoteSource="IPTableService"
+				statusLabel="{resultLabel}" statusImage="{resultImage}"
+				creationComplete="dataGrid.init();"
+				dropEnabled="false" x="0" y="0">				
+			<columns>
+				<mx:DataGridColumn dataField="id" editable="false" width="0"/>
+				<mx:DataGridColumn dataField="name"  editable="true" headerText="{resourceManager.getString('resources', 'ipman.name')}"/>
+				<mx:DataGridColumn dataField="localIp" editable="false" headerText="{resourceManager.getString('resources', 'ipman.localip')}"/>
+				<mx:DataGridColumn dataField="localMask" editable="false" headerText="{resourceManager.getString('resources', 'ipman.localmask')}"/>
+			</columns>
+	</RemoteDoubleClickDataGrid>
+	<mx:ControlBar horizontalAlign="right">
+		<mx:Image width="16" height="16" id="resultImage"/>
+		<mx:Label id="resultLabel"/>
+	</mx:ControlBar>
+</DraggablePanel>

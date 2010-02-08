@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" 
+	xmlns="org.findikproject.components.*">
+
+<mx:Script>
+	<![CDATA[
+	import org.findikproject.components.DoubleClickDataGrid;
+	import mx.managers.DragManager;
+	import mx.core.IUIComponent;
+	import mx.events.DragEvent;
+	import mx.controls.Alert;
+	import mx.rpc.events.FaultEvent;
+	import mx.rpc.events.ResultEvent;
+	
+	private function export():void {
+		backupGrid.getRemoteObject().insertData(null);
+		backupGrid.getGridData();
+	}
+		
+	private function downloadBackup():void {
+		fileDownload.startDownload("php/tmp/"+backupGrid.selectedItem.filename);
+	}
+	
+	private function uploadRestore():void {
+		fileDownload.startUpload();
+	}
+	
+	private function deleteDragEnter(event:DragEvent):void {
+	    var obj:IUIComponent = IUIComponent(event.currentTarget);
+	    DragManager.acceptDragDrop(obj);
+	}
+	
+	private function deleteDragDrop(event:DragEvent):void {
+		if (event.dragSource.hasFormat("items"))
+	    {		    	
+	    	var itemsArray:Array = event.dragSource.dataForFormat("items") as Array;
+	    	backupGrid.remove(itemsArray);	   
+	    	backupGrid.getGridData();     
+		}
+	}
+	]]>
+</mx:Script>
+	<FileDownload id="fileDownload" pb="{downloadProgress}" btn="{cancelDownload}" grid="{backupGrid}"/>
+	<DraggablePanel x="59" y="10" width="454" height="403" layout="absolute" 
+		title="{resourceManager.getString('resources', 'backup.title')}"
+		titleIcon="@Embed('/assets/images/icons/16x16/database.png')"
+		backgroundImage="@Embed('/assets/images/icons/database.png')">
+		<mx:Button label="{resourceManager.getString('resources', 'backup.backup')}" x="10" y="189" click="export();" width="155"/>
+		<mx:Button label="{resourceManager.getString('resources', 'backup.download')}" x="173" y="189" click="downloadBackup();" width="155"/>
+		<mx:Button label="{resourceManager.getString('resources', 'backup.import')}" x="173" y="219" width="155" click="uploadRestore();"/>
+		<mx:Button label="{resourceManager.getString('resources', 'backup.restore')}" x="10" y="219" width="155"/>
+		<RemoteDoubleClickDataGrid x="0" y="0" width="434" height="175" id="backupGrid"
+			dragEnabled="true" editable="false" dropEnabled="false" 
+			remoteDestination="zend" remoteSource="BackupService"
+			statusLabel="{resultLabel}" statusImage="{resultImage}"
+			creationComplete="backupGrid.init();">
+			<columns>
+				<mx:DataGridColumn dataField="filename" editable="false" headerText="{resourceManager.getString('resources', 'backup.filename')}"/>
+				<mx:DataGridColumn dataField="size" editable="false" headerText="{resourceManager.getString('resources', 'backup.size')}"/>
+				<mx:DataGridColumn dataField="date" editable="false" headerText="{resourceManager.getString('resources', 'backup.date')}"/>
+			</columns>
+		</RemoteDoubleClickDataGrid>
+		
+		<mx:HRule x="10" y="249" width="414"/>
+		<mx:ProgressBar x="10" y="259" width="414" id="downloadProgress" mode="manual"/>
+		<mx:Button x="302" y="295" label="{resourceManager.getString('resources', 'backup.canceldownload')}" id="cancelDownload" enabled="false"/>
+		<mx:Image id="image"
+			        source="@Embed('/assets/images/remove.png')" 
+			        dragDrop="deleteDragDrop(event);" dragEnter="deleteDragEnter(event);"
+			        x="351" y="180" width="64" height="64"/>
+		<mx:ControlBar horizontalAlign="right">
+			<mx:Image width="16" height="16" id="resultImage"/>
+			<mx:Label id="resultLabel"/>
+		</mx:ControlBar>
+	</DraggablePanel>
+</mx:Canvas>

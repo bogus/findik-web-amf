@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%"
+	xmlns:screens="org.findikproject.screens.*" 
+	xmlns:components="org.findikproject.components.*"
+	xmlns:views="org.findikproject.views.*">
+<mx:Metadata>
+	[ResourceBundle("resources")]
+</mx:Metadata>
+<mx:Script>
+	<![CDATA[
+		import org.findikproject.components.SessionValues;
+		import org.findikproject.components.CookieUtil;
+		import mx.events.ResourceEvent;
+		import mx.events.MenuEvent;
+		import mx.controls.Alert;
+	    
+	    private var locales:Array = ['en_US', 'tr_TR'];
+	    
+		private function menuHandler(event:MenuEvent):void
+		{	
+		   currentState=event.item.@actionState;
+		}
+		
+		private function localeComboBox_initializeHandler(event:Event):void
+        {
+        	var cookieVal:String = CookieUtil.getCookie('findik-lang') as String;
+        	if(cookieVal != null && (locales.indexOf(cookieVal) != -1)) {
+        		localeComboBox.selectedIndex = locales.indexOf(cookieVal);
+        		resourceManager.localeChain = [ cookieVal ];
+        	}
+        	else
+            	localeComboBox.selectedIndex = locales.indexOf(resourceManager.localeChain[0]);
+        }
+
+        private function localeComboBox_changeHandler(event:Event):void
+        {
+            var newLocale:String = String(locales[localeComboBox.selectedIndex]);
+
+            if (resourceManager.getLocales().indexOf(newLocale) != -1)
+            {
+                completeHandler(null);
+            }
+            else
+            {
+                var resourceModuleURL:String = "Resources_" + newLocale + ".swf";
+                var eventDispatcher:IEventDispatcher = resourceManager.loadResourceModule(resourceModuleURL);
+                eventDispatcher.addEventListener(ResourceEvent.COMPLETE, completeHandler);
+            }
+        }
+
+        private function completeHandler(event:ResourceEvent):void
+        {
+        	var cookieVal:String = CookieUtil.getCookie('findik-lang') as String;
+        	if(cookieVal != null) {
+        		CookieUtil.deleteCookie('findik-lang');
+        	} 
+        	CookieUtil.setCookie('findik-lang',locales[localeComboBox.selectedIndex],365*2);
+            resourceManager.localeChain = [ locales[localeComboBox.selectedIndex] ];
+        }
+        
+        private function logout():void
+		{
+			var ref:URLRequest = new URLRequest("javascript:location.reload(true)");
+			navigateToURL(ref, "_self");
+		}
+	]]>
+</mx:Script>
+	<mx:states>
+		<mx:State name="contentManagement">
+			<mx:AddChild relativeTo="{container}">
+				<views:ContentDraggablePanel id="contentManager"/>
+			</mx:AddChild>
+		</mx:State>
+		<mx:State name="mimetypeManagement">			
+			<mx:AddChild relativeTo="{container}">
+				<views:MimeTypePanel id="mimetypeManager"/>
+			</mx:AddChild>
+		</mx:State>
+		<mx:State name="ipManagement">			
+			<mx:AddChild relativeTo="{container}">
+				<views:IPDraggablePanel id="ipUtilsManager"/>
+			</mx:AddChild>
+		</mx:State>
+		<mx:State name="timeManagement">			
+			<mx:AddChild relativeTo="{container}">
+				<views:TimeTableDraggablePanel id="timeUtilsManager"/>
+			</mx:AddChild>
+		</mx:State>
+		<mx:State name="aclBlacklistManagement">
+			<mx:AddChild relativeTo="{container}">
+				<views:ACLManagementCanvas id="aclGenerator" />
+			</mx:AddChild>
+		</mx:State>
+		<mx:State name="userManagement">			
+			<mx:AddChild relativeTo="{container}">
+				<views:UserManagementDraggablePanel id="userManager"/>
+			</mx:AddChild>
+		</mx:State>
+		<mx:State name="exportImportManagement">			
+			<mx:AddChild relativeTo="{container}">
+				<views:ImportExportPanel id="exportManager"/>
+			</mx:AddChild>
+		</mx:State>
+	</mx:states>
+	
+	<mx:Canvas id="container" width="100%" height="100%" x="0" y="23"/>
+	
+	<mx:MenuBar x="0" y="0" width="100%" labelField="@label" id="menubar1" itemClick="menuHandler(event)">
+	<mx:XMLList>
+		<menuitem label="{resourceManager.getString('resources', 'menu.system')}">
+            <menuitem label="Backup / Restore" 
+            	actionState="exportImportManagement"/>
+            <menuitem label="User Management" 
+            	actionState="userManagement"/>
+        </menuitem>
+        <menuitem label="{resourceManager.getString('resources', 'menu.data')}">
+            <menuitem label="Content Management"
+            	actionState="contentManagement"/>
+            <menuitem label="{resourceManager.getString('resources', 'menu.data.mimetype')}" 
+            	actionState="mimetypeManagement"/>
+            <menuitem label="{resourceManager.getString('resources', 'menu.data.ip')}" 
+            	actionState="ipManagement"/>
+            <menuitem label="{resourceManager.getString('resources', 'menu.data.time')}" 
+            	actionState="timeManagement"/>
+        </menuitem>
+        <menuitem label="{resourceManager.getString('resources', 'menu.blacklist')}">
+        	<menuitem label="{resourceManager.getString('resources', 'menu.blacklist.acl')}" 
+        		actionState="aclBlacklistManagement"/>
+        </menuitem>
+    </mx:XMLList>
+	</mx:MenuBar>
+	<mx:ComboBox id="localeComboBox" right="120"
+                 initialize="localeComboBox_initializeHandler(event)"
+                 change="localeComboBox_changeHandler(event)">
+         <mx:dataProvider> 
+			<mx:Array>
+				<mx:Object id="en_US" label="English" />
+				<mx:Object id="tr_TR" label="Türkçe" />
+			</mx:Array>
+		</mx:dataProvider>
+    </mx:ComboBox>
+    <mx:Button y="0" label="{SessionValues.authUser.username + ' ' + resourceManager.getString('resources', 'menu.logout')}" 
+    	right="10" width="100" click="logout()"/>             
+</mx:Canvas>

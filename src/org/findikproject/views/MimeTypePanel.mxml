@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DraggablePanel xmlns="org.findikproject.components.*" xmlns:mx="http://www.adobe.com/2006/mxml"
+	width="1062" height="672" xmlns:validators="org.findikproject.validators.*" layout="absolute"
+	title="{resourceManager.getString('resources', 'mime.title')}"
+	titleIcon="@Embed('/assets/images/icons/16x16/mime.png')"
+	backgroundImage="@Embed('/assets/images/icons/mime.png')"
+	backgroundSize="200px">
+<mx:Metadata>
+	[ResourceBundle("resources")] 
+</mx:Metadata>
+
+<mx:Script>
+<![CDATA[
+	import org.findikproject.beans.VOMimeTypeGroup;
+	import org.findikproject.components.DoubleClickDataGrid;
+   import mx.collections.ItemResponder; 
+   import org.findikproject.beans.VOMimeCross;
+   import org.findikproject.beans.VOMimeType;
+   import mx.controls.dataGridClasses.DataGridColumn;
+   import mx.events.DataGridEvent;
+   import mx.events.CloseEvent;
+   import mx.controls.Alert;
+   import mx.rpc.events.FaultEvent;
+   import mx.rpc.events.ResultEvent;
+   import mx.collections.ArrayCollection;
+   import mx.events.ResourceEvent;
+   import mx.events.ValidationResultEvent;
+   import mx.core.IUIComponent;
+   import mx.events.DragEvent;
+   import mx.managers.DragManager;
+   import mx.collections.IViewCursor;
+   
+   private var selectedCategoryId:int = 0;
+   private var searchKeyData:String = null;
+   
+    private function deleteDragEnter(event:DragEvent):void {
+	    var obj:IUIComponent = IUIComponent(event.currentTarget);
+	    DragManager.acceptDragDrop(obj);
+	}
+	
+	private function deleteDragDrop(event:DragEvent):void {
+		if (event.dragSource.hasFormat("items"))
+	    {		    	
+	    	var itemsArray:Array = event.dragSource.dataForFormat("items") as Array;
+	    	var dataGrid:DoubleClickDataGrid = event.dragInitiator as DoubleClickDataGrid;
+	    	var cursor:IViewCursor = mimeGroupGrid.dataProvider.createCursor();
+	    	var arrList:ArrayCollection = new ArrayCollection();
+	    	if(dataGrid.id == "mimeCrossGrid") {
+		    	while(!cursor.afterLast) {
+					if(cursor.current.id == selectedCategoryId) {
+						cursor.current.crossCount -= itemsArray.length;	
+					} 
+		    		cursor.moveNext();
+		    	}
+		    	(dataGrid as PaginatedDoubleClickDataGrid).remove(itemsArray);
+	    	}
+	    	else 
+				(dataGrid as RemoteDoubleClickDataGrid).remove(itemsArray);	        
+		}
+	}
+	
+	private function addCrossDragEnter(event:DragEvent):void {
+	    var obj:IUIComponent = IUIComponent(event.currentTarget);
+	    if((event.dragInitiator as RemoteDoubleClickDataGrid).id == "mimeGrid")
+	    	DragManager.acceptDragDrop(obj);
+	}
+	
+	private function addCrossDragDrop(event:DragEvent):void {
+		if (event.dragSource.hasFormat("items"))
+	    {		    	
+	    	var itemsArray:Array = event.dragSource.dataForFormat("items") as Array;
+	    	var arrList:ArrayCollection = new ArrayCollection();
+	    	var i:int = 0;
+	    	var cursor:IViewCursor = mimeGroupGrid.dataProvider.createCursor();
+	    	for(;i<itemsArray.length;i++) {
+	    		var crossVal:VOMimeCross = new VOMimeCross();
+	    		crossVal.id = 0;
+	    		crossVal.fileExt = itemsArray[i].fileExt;
+	    		crossVal.mimeType = itemsArray[i].mimeType;
+	    		crossVal.mimeTypeId = itemsArray[i].id;
+	    		crossVal.groupId = selectedCategoryId;
+	    		arrList.addItem(crossVal); 
+	    	}
+			while(!cursor.afterLast) {
+				if(cursor.current.id == selectedCategoryId) {
+					cursor.current.crossCount += arrList.length;	
+				}
+				cursor.moveNext();
+	    	}
+	    	mimeCrossGrid.insert(arrList.toArray());	        
+		}
+	}
+	
+   private function add():void {
+   		
+   }
+   
+   private function search():void {
+   		if(searchKeyValidator.validate().type == ValidationResultEvent.VALID) {
+	   		searchKeyData = searchKey.text; 
+	   		if(mimeGroupCheckbox.selected) {
+	   			mimeGroupGrid.search(searchKeyData);
+	   			selectedCategoryId = 0;
+	   			mimeCrossGrid.dataProvider = null;
+	   		} else {
+	   			mimeGroupGrid.getGridData();
+	   		}  			
+	   		if(mimeTypeCheckbox.selected) {
+	   			mimeGrid.search(searchKeyData);
+	   		} else {
+	   			mimeGroupGrid.getGridData();
+	   		}  			   			
+	   		selectedCategoryName.text = resourceManager.getString('resources', 'form.searchkey') + ": "
+				+ searchKeyData;
+   		}
+   }
+   
+   private function clearSearch():void {
+   		searchKeyData = null;
+   		mimeGrid.getGridData();
+   		mimeGroupGrid.getGridData();
+   		searchKey.text = "";
+   		mimeGroupCheckbox.selected = false;
+   		mimeTypeCheckbox.selected = false;
+   		selectedCategoryName.text = resourceManager.getString('resources', 'mime.selectedgroup');
+   }
+	
+ 	private function changeSelectedCategory():void {
+		selectedCategoryId = mimeGroupGrid.selectedItem.id;
+		searchKeyData = null;
+		mimeGrid.getGridData();
+		mimeCrossGrid.changeSelectedCategory(selectedCategoryId,mimeGroupGrid.selectedItem.crossCount);
+		selectedCategoryName.text = resourceManager.getString('resources', 'mime.selectedgroup')
+			+ ": " + mimeGroupGrid.selectedItem.name.toString();
+	}
+	
+	private function addGroup():void {
+		if(groupNameValidator.validate().type && ValidationResultEvent.VALID) {
+			var groupVal:VOMimeTypeGroup = new VOMimeTypeGroup();
+			groupVal.id = 0;
+			groupVal.crossCount = 0;
+			groupVal.name = newGroup.text;
+			var arrList:ArrayCollection = new ArrayCollection();
+			arrList.addItem(groupVal);
+			mimeGroupGrid.insert(arrList.toArray());
+		}
+	}
+	
+	private function addMimetype():void {
+		if(extensionValidator.validate().type && ValidationResultEvent.VALID) {
+			var mimeVal:VOMimeType = new VOMimeType();
+			mimeVal.id = 0;
+			mimeVal.fileExt = newExtension.text;
+			mimeVal.mimeType = newMimetype.text;
+			var arrList:ArrayCollection = new ArrayCollection();
+			arrList.addItem(mimeVal);
+			mimeGrid.insert(arrList.toArray());
+		}
+	}
+]]>
+</mx:Script>
+			
+	<mx:Image id="image"
+			        source="@Embed('/assets/images/remove.png')" 
+			        dragDrop="deleteDragDrop(event);" dragEnter="deleteDragEnter(event);"
+			        x="968" y="524" width="64" height="64"/>
+	
+	<RemoteDoubleClickDataGrid width="291" height="366" rowCount="4" id="mimeGroupGrid" alpha="0.5"
+				dragEnabled="true" editable="true" dropEnabled="false" 
+				x="0" y="0" allowMultipleSelection="true"
+				remoteDestination="zend" remoteSource="MimeTypeGroupService"
+				statusLabel="{resultLabel}" statusImage="{resultImage}"
+				creationComplete="mimeGroupGrid.init();">				
+			<columns>
+				<mx:DataGridColumn dataField="id" editable="false" visible="false"/>
+				<mx:DataGridColumn dataField="name" editable="true" headerText="{resourceManager.getString('resources', 'mime.groupname')}"/>
+				<mx:DataGridColumn dataField="crossCount" width="100" editable="false" headerText="{resourceManager.getString('resources', 'mime.groupcount')}"/>
+			</columns>
+	</RemoteDoubleClickDataGrid>
+	
+	<mx:HRule x="684" y="30" width="348"/>
+	<mx:Label x="684" y="6" text="{resourceManager.getString('resources', 'mime.selectedgroup')}" id="selectedCategoryName"/>
+	<mx:Button x="10" y="374" label="{resourceManager.getString('resources', 'mime.selectgroup')}" width="161"
+		click="changeSelectedCategory();" icon="@Embed('/assets/images/icons/16x16/outbox.png')"/>
+	<RemoteDoubleClickDataGrid width="367" height="366" rowCount="4" id="mimeGrid" alpha="0.5"
+				dragEnabled="true" editable="true" dropEnabled="false" 
+				x="299" y="0" allowMultipleSelection="true"
+				remoteDestination="zend" remoteSource="MimeTypeService"
+				statusLabel="{resultLabel}" statusImage="{resultImage}"
+				creationComplete="mimeGrid.init();">				
+			<columns>
+				<mx:DataGridColumn dataField="id" editable="false" visible="false"/>
+				<mx:DataGridColumn dataField="fileExt" width="100" editable="true" headerText="{resourceManager.getString('resources', 'mime.fileext')}"/>
+				<mx:DataGridColumn dataField="mimeType" editable="true" headerText="{resourceManager.getString('resources', 'mime.mimetype')}"/>
+			</columns>
+	</RemoteDoubleClickDataGrid>
+	
+	<mx:Form x="3" y="422" width="340" height="70" cornerRadius="3" borderStyle="solid" 
+		borderThickness="2" backgroundColor="#F3F3F3" paddingTop="3" paddingBottom="3">
+		<mx:FormItem label="{resourceManager.getString('resources', 'mime.group')}">
+			<mx:TextInput width="141" id="newGroup"/>
+		</mx:FormItem>
+		<mx:FormItem>
+			<mx:Button label="{resourceManager.getString('resources', 'mime.addgroup')}" 
+				click="addGroup();" icon="@Embed('/assets/images/icons/16x16/edit_add.png')"/>
+		</mx:FormItem>
+	</mx:Form>
+	<mx:Form x="3" y="495" width="340" height="100" cornerRadius="3" borderStyle="solid" 
+		borderThickness="2" backgroundColor="#F3F3F3" paddingTop="3" paddingBottom="3">
+		<mx:FormItem label="{resourceManager.getString('resources', 'mime.fileext')}">
+			<mx:TextInput width="80" id="newExtension"/>
+		</mx:FormItem>
+		<mx:FormItem label="{resourceManager.getString('resources', 'mime.mimetype')}">
+			<mx:TextInput width="141" id="newMimetype"/>
+		</mx:FormItem>
+		<mx:FormItem>
+			<mx:Button label="{resourceManager.getString('resources', 'mime.addmime')}" 
+				click="addMimetype();" icon="@Embed('/assets/images/icons/16x16/edit_add.png')"/>
+		</mx:FormItem>
+	</mx:Form>
+	<mx:Form x="346" y="422" width="360" height="173" borderStyle="solid" cornerRadius="3" borderThickness="2" backgroundColor="#F3F3F3" paddingTop="3" paddingBottom="3">
+		<mx:FormHeading label="{resourceManager.getString('resources', 'form.search')}" textAlign="left"/>
+		<mx:FormItem label="{resourceManager.getString('resources', 'form.searchkey')}">
+			<mx:TextInput width="150" id="searchKey" />
+		</mx:FormItem>
+		<mx:FormItem label="{resourceManager.getString('resources', 'form.type')}">
+			<mx:Canvas>
+				<mx:CheckBox label="{resourceManager.getString('resources', 'mime.type')}" x="0" y="0" id="mimeTypeCheckbox"/>
+				<mx:CheckBox label="{resourceManager.getString('resources', 'mime.group')}" x="100" y="0" id="mimeGroupCheckbox"/>
+			</mx:Canvas>
+		</mx:FormItem>
+		<mx:FormItem>
+			<mx:Canvas>
+				<mx:Button label="{resourceManager.getString('resources', 'form.search')}" 
+					click="search();" icon="@Embed('/assets/images/icons/16x16/xmag.png')"/>
+				<mx:Button x="90" label="{resourceManager.getString('resources', 'form.clearsearch')}" 
+					click="clearSearch();" icon="@Embed('/assets/images/icons/16x16/recur.png')"/>
+			</mx:Canvas>		
+		</mx:FormItem>
+	</mx:Form>
+	
+	<mx:StringValidator id="groupNameValidator" required="true" minLength="3" maxLength="32" source="{newGroup}" property="text"/>
+	<mx:StringValidator id="extensionValidator" required="true" minLength="2" maxLength="7" source="{newExtension}" property="text"/>
+	<mx:StringValidator id="searchKeyValidator" required="true" minLength="2" source="{searchKey}" property="text"/>
+	<mx:VRule x="674" y="40" height="356"/>
+	<PaginatedDoubleClickDataGrid width="348" height="326" rowCount="4" id="mimeCrossGrid" alpha="0.5"
+				dragEnabled="true" editable="false" 
+				x="684" y="40" allowMultipleSelection="true"
+				remoteDestination="zend" remoteSource="MimeCrossService"
+				statusLabel="{resultLabel}" statusImage="{resultImage}"
+				creationComplete="mimeCrossGrid.init();"
+				dragDrop="addCrossDragDrop(event);" dragEnter="addCrossDragEnter(event);">				
+			<columns>
+				<mx:DataGridColumn dataField="id" editable="false" visible="false"/>
+				<mx:DataGridColumn dataField="groupId" editable="false" visible="false"/>
+				<mx:DataGridColumn dataField="mimeTypeId" editable="false" visible="false"/>
+				<mx:DataGridColumn dataField="fileExt" width="100" editable="false" headerText="{resourceManager.getString('resources', 'mime.type')}"/>
+				<mx:DataGridColumn dataField="mimeType" width="100" editable="false" headerText="{resourceManager.getString('resources', 'mime.group')}"/>
+			</columns>
+	</PaginatedDoubleClickDataGrid>
+	<mx:ControlBar horizontalAlign="right">
+		<mx:Image width="16" height="16" id="resultImage"/>
+		<mx:Label id="resultLabel"/>
+	</mx:ControlBar>
+</DraggablePanel>

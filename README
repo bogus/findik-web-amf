@@ -1,0 +1,8 @@
+This project is for the management of Findik Content Filter.
+
+This branch is licensed under GPL. 
+
+It is done with Flex and PHP. You need a LAMP or WAMP to run this project. Just download, build and put the output in findik-web-amf directory in your htdocs. Then do your mysql configuration from db.php. Don't forget this interface is NOT compatible with current version of Findik.
+
+http://findikproject.org
+http://www.medrateknoloji.com

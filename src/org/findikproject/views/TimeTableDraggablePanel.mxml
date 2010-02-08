@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DraggablePanel xmlns="org.findikproject.components.*" xmlns:mx="http://www.adobe.com/2006/mxml"
+	width="666" height="496" xmlns:validators="org.findikproject.validators.*" layout="absolute"
+	title="{resourceManager.getString('resources', 'timeman.title')}"
+	titleIcon="@Embed('/assets/images/icons/16x16/cal.png')" 
+	backgroundImage="@Embed('/assets/images/icons/cal.png')"
+	backgroundSize="200px">
+<mx:Metadata>
+	[ResourceBundle("resources")]
+</mx:Metadata>
+<mx:Script>
+<![CDATA[
+   import org.findikproject.components.DoubleClickDataGrid;
+   import org.findikproject.beans.VOTimeTable;
+   import mx.controls.dataGridClasses.DataGridColumn;
+   import mx.events.DataGridEvent;
+   import mx.events.CloseEvent;
+   import mx.controls.Alert;
+   import mx.rpc.events.FaultEvent;
+   import mx.rpc.events.ResultEvent;
+   import mx.collections.ArrayCollection;
+   import mx.events.ResourceEvent;
+   import mx.events.ValidationResultEvent;
+   import mx.core.IUIComponent;
+   import mx.events.DragEvent;
+   import mx.managers.DragManager;
+   private function addTimeVal():void {
+   		var events:Array = new Array(nameValidator.validate().type);	   		
+   		var result:Boolean = true;
+   		
+   		for(var i:Number=0; i < events.length; i++)
+   			 result = (result && (events[i] == ValidationResultEvent.VALID));
+   		
+   		if(startTime.cmbTime.text >= endTime.cmbTime.text) {
+   			 Alert.show(resourceManager.getString('resources', 'timeman.invalidtime'));
+   			 result = result && false;
+   		}
+   			  
+   		if(result) {   			
+   			var timeVal:VOTimeTable = new VOTimeTable();
+   			timeVal.id = 0;
+   			timeVal.name = timename.text;
+   			timeVal.startTime = startTime.cmbTime.text + ":00";
+   			timeVal.endTime = endTime.cmbTime.text + ":00";
+   			var day:int = 0;
+   			if(mon_checkbox.selected == true)
+   				 day += 2;
+   			if(tue_checkbox.selected == true)
+   				 day += 4;
+   			if(wed_checkbox.selected == true)
+   				 day += 8;
+   			if(thu_checkbox.selected == true)
+   				 day += 16;
+   			if(fri_checkbox.selected == true)
+   				 day += 32;
+   			if(sat_checkbox.selected == true)
+   				 day += 64;
+			if(sun_checkbox.selected == true)
+   				 day += 128;
+   			timeVal.dayOfWeek = day;
+			   			
+   			var arrList:ArrayCollection = new ArrayCollection();
+   			arrList.addItem(timeVal);
+   			dataGrid.insert(arrList.toArray());
+   		} 
+   }
+   
+   private function deleteDragEnter(event:DragEvent):void {
+	    var obj:IUIComponent = IUIComponent(event.currentTarget);
+	    DragManager.acceptDragDrop(obj);
+	}
+	
+	private function deleteDragDrop(event:DragEvent):void {
+		if (event.dragSource.hasFormat("items"))
+	    {
+	    	var itemsArray:Array = event.dragSource.dataForFormat("items") as Array;
+			dataGrid.remove(itemsArray);
+		}
+	}
+	
+	private function displayDayNames(item:Object, col:DataGridColumn):String
+    {
+    	var days:int = (item as VOTimeTable).dayOfWeek;
+        var list:ArrayCollection = new ArrayCollection();
+        var finalDayStr:String = "";
+        
+        if((days & 2) == 2)
+        	list.addItem(resourceManager.getString('resources', 'timeman.mon'));
+        if((days & 4) == 4)
+        	list.addItem(resourceManager.getString('resources', 'timeman.tue'));
+        if((days & 8) == 8)
+        	list.addItem(resourceManager.getString('resources', 'timeman.wed'));
+        if((days & 16) == 16)
+        	list.addItem(resourceManager.getString('resources', 'timeman.thu'));
+        if((days & 32) == 32)
+        	list.addItem(resourceManager.getString('resources', 'timeman.fri'));
+        if((days & 64) == 64)
+        	list.addItem(resourceManager.getString('resources', 'timeman.sat'));
+        if((days & 128) == 128)
+        	list.addItem(resourceManager.getString('resources', 'timeman.sun'));
+        
+        for(var i:int = 0; i < list.length; i++) {
+        	finalDayStr += list.getItemAt(i);
+        	if(i + 1 < list.length)
+        		finalDayStr += ",";	
+        }
+        	
+		return finalDayStr;
+   	}
+]]>
+</mx:Script>
+	<mx:Canvas x="399" width="247" height="313">
+		<mx:Text text="{resourceManager.getString('resources', 'timeman.name')}" x="10" y="19"/>
+		<mx:TextInput id="timename" x="10" y="45"/>
+		<mx:Text text="{resourceManager.getString('resources', 'timeman.starttime')}" x="10" y="75"/>
+		<TimePicker id="startTime"  x="10" y="101"/>
+		<mx:Text text="{resourceManager.getString('resources', 'timeman.endtime')}" x="10" y="135"/>
+		<TimePicker id="endTime"  x="10" y="161"/>
+		<mx:Text text="{resourceManager.getString('resources', 'timeman.dayofweek')}" x="10" y="195"/>
+		<mx:CheckBox label="{resourceManager.getString('resources', 'timeman.alldays')}" id="all_days_checkbox" x="10" y="221"/>
+		<mx:CheckBox label="{resourceManager.getString('resources', 'timeman.weekdays')}" id="weekdays_checkbox" x="115" y="221"/>
+		<mx:CheckBox label="{resourceManager.getString('resources', 'timeman.mon')}" id="mon_checkbox" x="10" y="251"/>
+		<mx:CheckBox label="{resourceManager.getString('resources', 'timeman.tue')}" id="tue_checkbox" x="69" y="251"/>
+		<mx:CheckBox label="{resourceManager.getString('resources', 'timeman.wed')}" id="wed_checkbox" x="115" y="251"/>
+		<mx:CheckBox label="{resourceManager.getString('resources', 'timeman.thu')}" id="thu_checkbox" x="10" y="281"/>
+		<mx:CheckBox label="{resourceManager.getString('resources', 'timeman.fri')}" id="fri_checkbox" x="69" y="281"/>
+		<mx:CheckBox label="{resourceManager.getString('resources', 'timeman.sat')}" id="sat_checkbox" x="115" y="281"/>
+		<mx:CheckBox label="{resourceManager.getString('resources', 'timeman.sun')}" id="sun_checkbox" x="166" y="281"/>
+		<CheckBoxGroup id="days_group" 
+            	master="{all_days_checkbox}" 
+            	subordinates="{[mon_checkbox,tue_checkbox,wed_checkbox,thu_checkbox,fri_checkbox,sat_checkbox,sun_checkbox]}" 
+            	/>           
+        <CheckBoxGroup id="weekdays_group" 
+        	master="{weekdays_checkbox}" 
+        	subordinates="{[mon_checkbox,tue_checkbox,wed_checkbox,thu_checkbox,fri_checkbox]}" 
+        	/>
+	</mx:Canvas>
+		
+	<mx:Button label="{resourceManager.getString('resources', 'timeman.add')}" 
+		click="addTimeVal();" x="408" y="321" 
+		icon="@Embed('/assets/images/icons/16x16/edit_add.png')"></mx:Button>		
+		
+	
+	<mx:Image id="image"
+			        source="@Embed('/assets/images/remove.png')" 
+			        dragDrop="deleteDragDrop(event);" dragEnter="deleteDragEnter(event);"
+			        x="572" y="344" width="64" height="64"/>
+	
+<mx:StringValidator source="{timename}" property="text" maxLength="32" required="true" id="nameValidator" />
+
+	<RemoteDoubleClickDataGrid width="400" height="424" rowCount="4" id="dataGrid" alpha="0.5"
+				dragEnabled="true" editable="true"
+				remoteDestination="zend" remoteSource="TimeTableService"
+				statusLabel="{resultLabel}" statusImage="{resultImage}"
+				creationComplete="dataGrid.init();"
+				dropEnabled="false" x="0" y="0">				
+			<columns>
+				<mx:DataGridColumn dataField="id" editable="false" width="0"/>
+				<mx:DataGridColumn dataField="name" width="100" editable="true" headerText="{resourceManager.getString('resources', 'timeman.name')}"/>
+				<mx:DataGridColumn dataField="startTime" width="70" editable="false" headerText="{resourceManager.getString('resources', 'timeman.starttime')}"/>
+				<mx:DataGridColumn dataField="endTime" width="70" editable="false" headerText="{resourceManager.getString('resources', 'timeman.endtime')}"/>
+				<mx:DataGridColumn dataField="dayOfWeek" editable="false" headerText="{resourceManager.getString('resources', 'timeman.dayofweek')}"
+					labelFunction="displayDayNames"/>
+			</columns>
+	</RemoteDoubleClickDataGrid>
+	<mx:ControlBar horizontalAlign="right">
+		<mx:Image width="16" height="16" id="resultImage"/>
+		<mx:Label id="resultLabel"/>
+	</mx:ControlBar>
+</DraggablePanel>

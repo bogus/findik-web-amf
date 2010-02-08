@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="354" height="28">
+<mx:Script>
+	<![CDATA[
+	
+   		import mx.events.ValidationResultEvent;
+   		
+		[Bindable]
+		public var currentPage:int = 1;
+		[Bindable]
+		public var totalPages:int=0;
+		[Bindable]
+		public var totalElement:int=0;
+		[Bindable] 
+		public var pageElementCount:int=0;
+
+		[Bindable]
+		public var remoteFunc:Function = null;
+		[Bindable]
+		public var dataGrid:PaginatedDoubleClickDataGrid = null;
+		
+		public function resetPagination(totalElement:int):void {
+			currentPage = 1;
+			this.totalElement = totalElement;
+			prevButton.enabled = false;
+			totalPages = (totalElement / pageElementCount) + 1;
+			totalPage.text = totalPages.toString();
+			if(currentPage >= totalPages)
+				nextButton.enabled = false;
+			else
+				nextButton.enabled = true;
+			curPage.text = "1";
+			goPage.text = "1"; 
+		}
+		
+		public function setPagination():void {
+			curPage.text = currentPage.toString();
+			if(currentPage > 1)
+			 	prevButton.enabled = true;
+			else
+				prevButton.enabled = false;
+			if(currentPage >= totalPages)
+				nextButton.enabled = false;
+			totalPages = (totalElement / pageElementCount) + 1;
+			totalPage.text = totalPages.toString(); 	
+		}
+		
+		public function changeTotalPage(totalElement:int):void {
+			this.totalElement = totalElement;
+			totalPages = (totalElement / pageElementCount) + 1;
+			totalPage.text = totalPages.toString();
+			if(currentPage >= totalPages)
+				nextButton.enabled = false;
+			else
+				nextButton.enabled = true;
+		}
+		
+		public function clickEvent(action:String, paginationCanvas:PaginationCanvas):void {
+			if(action == "prev") {
+				if(paginationCanvas.currentPage > 0) {
+					paginationCanvas.currentPage -= 1
+				} 
+			} else if(action == "go") {
+				if(paginationCanvas.goPageValidator.validate().type == ValidationResultEvent.VALID) {	
+					if(parseInt(paginationCanvas.goPage.text) <= paginationCanvas.totalPages) {
+						paginationCanvas.currentPage = parseInt(paginationCanvas.goPage.text);
+					}
+				} else 
+					return;
+			} else if(action == "next") {
+				if(paginationCanvas.currentPage <= paginationCanvas.totalPages) {
+					paginationCanvas.currentPage += 1
+				} 
+			}
+			dataGrid.getPaginatedData(paginationCanvas);
+		}
+	]]>
+</mx:Script>
+	
+	<mx:Label x="10" y="5" id="curPage"  textAlign="right"/>
+	<mx:Label x="48" y="5" text="/" width="12"/>
+	<mx:Label x="58" y="5" id="totalPage" textAlign="left"/>
+	<mx:Button x="96" y="3" label="Prev" id="prevButton" click="clickEvent('prev',this);" enabled="false"
+		icon="@Embed('/assets/images/icons/16x16/agt_back.png')"/>
+	<mx:Button x="233" y="3" label="Go" id="goButton" click="clickEvent('go',this);"/>
+	<mx:TextInput x="170" y="3" width="64" id="goPage"/>
+	<mx:Button x="278" y="3" label="Next" id="nextButton" click="clickEvent('next',this);" enabled="false"
+		icon="@Embed('/assets/images/icons/16x16/agt_forward.png')"/>
+
+	<mx:NumberValidator source="{goPage}" property="text" integerError="Enter Integer value"
+        minValue="1" maxValue="{totalPages}" domain="int" 
+        trigger="{goButton}" triggerEvent="click" id="goPageValidator" />
+</mx:Canvas>

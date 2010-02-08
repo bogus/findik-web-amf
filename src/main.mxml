@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" 
+	xmlns:screens="org.findikproject.screens.*" pageTitle="Findik-Web Manager" 
+	xmlns:components="org.findikproject.components.*"
+	xmlns:views="org.findikproject.views.*">
+<mx:Style source="/assets/main.css"/>
+<mx:Metadata>
+	[ResourceBundle("resources")]  
+</mx:Metadata>
+
+<mx:states> 
+	<mx:State name="loggedin">
+		<mx:RemoveChild target="{loginCanvas}"/>
+		<mx:AddChild position="lastChild">
+			<views:StartPage />
+		</mx:AddChild>
+	</mx:State>
+</mx:states>
+<mx:RemoteObject id="myRemote" destination="zend" source="UserService" 
+	showBusyCursor="true" fault="faultListener(event)">
+     <mx:method name="checkLogin" result="checkLoginListener(event)"/>
+</mx:RemoteObject> 
+<mx:Script>
+	<![CDATA[
+		import org.findikproject.components.SessionValues;
+		import mx.events.ValidationResultEvent;
+		import org.findikproject.util.SHA1;
+		import mx.rpc.events.FaultEvent;
+		import mx.controls.Alert;
+		import mx.rpc.events.ResultEvent;
+		
+		private function login():void {
+			if(usernameValidator.validate().type && passwordValidator.validate().type
+				== ValidationResultEvent.VALID)
+				myRemote.checkLogin(username.text,SHA1.hex_sha1(password.text));
+		}
+		
+		private function faultListener(event:FaultEvent):void {
+	   		Alert.show(event.fault.message);
+	   	}
+		
+		private function checkLoginListener(event:ResultEvent):void {     
+			if(event.result.toString() != "-1") {
+				SessionValues.authUser.id = event.result as int;
+				SessionValues.authUser.username = username.text;
+				currentState = "loggedin";
+			}
+			else
+				Alert.show(resourceManager.getString('resources','login.notvalid'));
+   		}
+	]]>
+</mx:Script>
+<mx:Canvas id="loginCanvas" x="0" y="0" width="100%" height="100%">
+<mx:Panel x="330" y="95" width="250" height="136" layout="absolute"
+	titleIcon="@Embed('/assets/images/icons/16x16/lock.png')" 
+	title="{resourceManager.getString('resources','login.title')}" 
+	id="login_panel"> 
+		<mx:Text x="10" y="10" text="{resourceManager.getString('resources','login.username')}"/>
+		<mx:Text x="10" y="36" text="{resourceManager.getString('resources','login.password')}"/>
+		<mx:TextInput x="80" y="8" width="140" id="username"/>
+		<mx:TextInput x="80" y="34" width="140" id="password" displayAsPassword="true"/>
+		<mx:Button x="113" y="64" label="{resourceManager.getString('resources','login.submit')}"
+			icon="@Embed('/assets/images/icons/16x16/ok.png')"  
+			click="login();"/>
+	</mx:Panel>
+	<mx:Text text="a handful, everyday.." color="#D27A08" fontSize="17" fontFamily="Courier New" fontWeight="bold" right="10" bottom="10"/>
+</mx:Canvas>
+<mx:StringValidator source="{username}" property="text" maxLength="32" required="true" id="usernameValidator" />
+<mx:StringValidator source="{password}" minLength="6" maxLength="32" property="text"  required="true" id="passwordValidator" />
+
+<!--
+<views:StartPage />
+-->
+</mx:Application>
