@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <DraggablePanel xmlns="org.findikproject.components.*" xmlns:mx="http://www.adobe.com/2006/mxml"
-	width="600" height="376" xmlns:validators="org.findikproject.validators.*" layout="absolute"
+	xmlns:validators="org.findikproject.validators.*" layout="absolute"
 	creationComplete="myRemote.getData();"
 	titleIcon="@Embed('/assets/images/icons/16x16/kuser.png')" 
 	backgroundImage="@Embed('/assets/images/icons/Community Help.png')" 

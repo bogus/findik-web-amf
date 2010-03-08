@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <DraggablePanel xmlns="org.findikproject.components.*" xmlns:mx="http://www.adobe.com/2006/mxml"
-	width="1056" height="672" xmlns:validators="org.findikproject.validators.*" layout="absolute"
+	xmlns:validators="org.findikproject.validators.*" layout="absolute"
 	title="{resourceManager.getString('resources', 'content.title')}"
 	titleIcon="@Embed('/assets/images/icons/16x16/internet.png')" 
 	backgroundImage="@Embed('/assets/images/icons/internet.png')"

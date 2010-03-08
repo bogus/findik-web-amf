@@ -4,6 +4,7 @@
         <service id="amfphp-flashremoting-service" class="flex.messaging.services.RemotingService" messageTypes="flex.messaging.messages.RemotingMessage">
             <destination id="zend">
                 <channels>
+                	<!-- <channel ref="my-ssl-zend"/> -->
                     <channel ref="my-zend"/>
                 </channels>
                 <properties>
@@ -13,8 +14,17 @@
         </service>
     </services>
     <channels>
+    <!--
+    	<channel-definition id="my-ssl-zend" class="mx.messaging.channels.SecureAMFChannel">
+            <endpoint uri="https://{server.name}:{server.port}/findik/php/" class="flex.messaging.endpoints.SecureAMFEndpoint"/>
+        </channel-definition>
+    
         <channel-definition id="my-zend" class="mx.messaging.channels.AMFChannel">
-            <endpoint uri="http://localhost/findik-web-amf/php/" class="flex.messaging.endpoints.AMFEndpoint"/>
+            <endpoint uri="http://{server.name}:{server.port}/findik-web-amf/php/" class="flex.messaging.endpoints.AMFEndpoint"/>
+        </channel-definition>
+    -->
+    	<channel-definition id="my-zend" class="mx.messaging.channels.AMFChannel">
+            <endpoint uri="http://localhost/findik/php/" class="flex.messaging.endpoints.AMFEndpoint"/>
         </channel-definition>
     </channels>
 </services-config>

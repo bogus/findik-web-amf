@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <DraggablePanel xmlns="org.findikproject.components.*" xmlns:mx="http://www.adobe.com/2006/mxml"
-	width="666" height="496" xmlns:validators="org.findikproject.validators.*" layout="absolute"
+	xmlns:validators="org.findikproject.validators.*" layout="absolute"
 	title="{resourceManager.getString('resources', 'timeman.title')}"
 	titleIcon="@Embed('/assets/images/icons/16x16/cal.png')" 
 	backgroundImage="@Embed('/assets/images/icons/cal.png')"

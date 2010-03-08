@@ -2,7 +2,8 @@
 <mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%"
 	xmlns:screens="org.findikproject.screens.*" 
 	xmlns:components="org.findikproject.components.*"
-	xmlns:views="org.findikproject.views.*">
+	xmlns:views="org.findikproject.views.*"
+	creationComplete="currentState='btkReqs'">
 <mx:Metadata>
 	[ResourceBundle("resources")]
 </mx:Metadata>
@@ -66,6 +67,11 @@
 	]]>
 </mx:Script>
 	<mx:states>
+		<mx:State name="dashboard">
+			<mx:AddChild relativeTo="{container}">
+				<views:Dashboard id="dashboard"/>
+			</mx:AddChild>
+		</mx:State>
 		<mx:State name="contentManagement">
 			<mx:AddChild relativeTo="{container}">
 				<views:ContentDraggablePanel id="contentManager"/>
@@ -101,6 +107,12 @@
 				<views:ImportExportPanel id="exportManager"/>
 			</mx:AddChild>
 		</mx:State>
+		<mx:State name="btkReqs">			
+			<mx:AddChild relativeTo="{container}">
+				<!--<views:BTKTimeline id="btkReqs"/>-->
+				 <views:Hebele /> 
+			</mx:AddChild>
+		</mx:State>
 	</mx:states>
 	
 	<mx:Canvas id="container" width="100%" height="100%" x="0" y="23"/>
@@ -108,10 +120,14 @@
 	<mx:MenuBar x="0" y="0" width="100%" labelField="@label" id="menubar1" itemClick="menuHandler(event)">
 	<mx:XMLList>
 		<menuitem label="{resourceManager.getString('resources', 'menu.system')}">
+			<menuitem label="{resourceManager.getString('resources', 'menu.dashboard')}" 
+            	actionState="dashboard"/>
             <menuitem label="Backup / Restore" 
             	actionState="exportImportManagement"/>
             <menuitem label="User Management" 
             	actionState="userManagement"/>
+            <menuitem label="{resourceManager.getString('resources', 'btk.title')}" 
+            	actionState="btkReqs"/>
         </menuitem>
         <menuitem label="{resourceManager.getString('resources', 'menu.data')}">
             <menuitem label="Content Management"

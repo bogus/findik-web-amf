@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DraggablePanel 
+	xmlns="org.findikproject.components.*" 
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:flexlib="http://code.google.com/p/flexlib/"
+	title="{resourceManager.getString('resources', 'btk.timeline')}" 
+	creationComplete="init()">
+	<mx:Metadata>
+		[ResourceBundle("resources")]
+	</mx:Metadata>
+	<mx:Script>
+		<![CDATA[ 
+			import flexlib.scheduling.util.DateUtil;
+			import flexlib.scheduling.samples.ScheduleData;
+			import flexlib.scheduling.scheduleClasses.renderers.ColoredSolidScheduleEntryRenderer;
+			import flexlib.scheduling.scheduleClasses.ColoredScheduleEntry;
+			import mx.controls.Alert;
+			import org.findikproject.beans.VOTimeline;
+			import org.findikproject.beans.VOTimeTable;
+			import mx.events.ScrollEventDirection;
+			import mx.events.ScrollEvent;
+			import mx.collections.ArrayCollection;
+			import org.findikproject.components.RemoteDataObject;
+			import org.findikproject.util.RemoteDataObjectEvent;
+			
+			[Bindable]
+			private var remoteDataObject:RemoteDataObject;
+			[Bindable]
+	        private var startDate : Date;
+	        [Bindable]
+	        private var endDate : Date;
+	        [Bindable]
+	        private var zoom : Number;
+        	[Bindable]         
+         	private var dataProvider : ArrayCollection;
+         	[Bindable]
+         	private var scheduleViewerWidth : Number = 700;
+         	
+			private function init():void {
+				remoteDataObject = new RemoteDataObject("BTKTimelineService",null,null);
+				remoteDataObject.addEventListener(RemoteDataObjectEvent.DATA_RECEIVED, dataReceived);
+				remoteDataObject.init();
+			}
+			
+			private function dataReceived(event:RemoteDataObjectEvent):void {
+				var timeData:ArrayCollection = new ArrayCollection(remoteDataObject.remoteData as Array);
+				var serviceTimelineArray:Array = new Array();
+				var systemTimelineArray:Array = new Array();
+				
+				startDate = (timeData.getItemAt(0) as VOTimeline).startDate;
+				endDate = (timeData.getItemAt(timeData.length - 1) as VOTimeline).endDate;
+				
+				for each(var obj:VOTimeline in timeData) {
+					var entry : ColoredScheduleEntry = new ColoredScheduleEntry();
+					entry.startDate = obj.startDate;
+					entry.endDate = obj.endDate;
+					
+					if(obj.status == 2) {
+						entry.label = resourceManager.getString('resources', 'btk.timeline.serviceon');
+						entry.backgroundColor = 0x0000FF;
+					}
+					else if(obj.status == 1){
+						entry.label =  resourceManager.getString('resources', 'btk.timeline.on');
+						entry.backgroundColor = 0x00FF00;
+					}
+					else if(obj.status == 0){
+						entry.label =  resourceManager.getString('resources', 'btk.timeline.off');
+						entry.backgroundColor = 0xFF0000;
+					}
+					serviceTimelineArray.push(entry);
+				}
+
+				dataProvider = new ArrayCollection(serviceTimelineArray);
+
+			}
+			
+         
+	         private function onZoom( value : Number ) : void
+	         {
+	            zoom = value;
+	         }
+			
+			private function onScrollTimeline( position : Number ) : void
+	        {
+	           scheduleViewer.xPosition = position;
+	        }
+	         
+	        private function onScrollScheduleViewer( event : ScrollEvent ) : void
+	        {
+	           if( event.direction == ScrollEventDirection.HORIZONTAL )
+	           {
+	              timeline.xPosition = event.position;
+	           }
+	        }
+	        private function gotoNow() : void
+	        {
+	           var time : Date = new Date();
+	           scheduleViewer.moveToTime( time.getTime() - startDate.getTime() );
+	        }
+	        
+	        private function gotoSelectedEntry() : void
+	        {
+	           if( scheduleViewer.selectedItem != null )
+	           {
+	              scheduleViewer.moveToEntry( scheduleViewer.selectedItem );
+	           }
+	           else
+	           {
+	              warnAboutNoSelection();
+	           }
+	        }
+	        
+	        private function warnAboutNoSelection() : void
+	        {
+	           Alert.show( "Please select an entry." );
+	        }
+		]]>
+	</mx:Script>
+	<mx:VBox verticalGap="0">
+		<flexlib:Timeline id="timeline" 
+	      width="{scheduleViewerWidth}" 
+	      startDate="{ startDate }" endDate="{ endDate }" 
+	      zoom="{ zoom }" 
+	      scroll="onScrollTimeline( event.position );" 
+	      />
+	          
+	    <flexlib:ScheduleViewer 
+	      id="scheduleViewer"  
+	      width="{scheduleViewerWidth}" height="200" 
+	      dataProvider="{ dataProvider }"    
+	      startDate="{ startDate }" endDate="{ endDate }" 
+	      zoom="{ zoom }" 
+	      horizontalScrollPolicy="off" 
+	      entryRenderer="flexlib.scheduling.scheduleClasses.renderers.ColoredGradientScheduleEntryRenderer"       
+	      pixelScroll="onScrollScheduleViewer( event );" 
+	      />
+	      
+	      <mx:HBox width="{ scheduleViewerWidth }" paddingTop="6">      
+	      <mx:Label text="{resourceManager.getString('resources', 'btk.timeline.go')}"/>
+	      <mx:Button label="{resourceManager.getString('resources', 'btk.timeline.now')}" click="gotoNow();"/>
+	      <mx:Button label="{resourceManager.getString('resources', 'btk.timeline.selected')}" click="gotoSelectedEntry();"/>
+	      <mx:Spacer width="100%"/>
+	      <mx:Label text="{resourceManager.getString('resources', 'btk.timeline.zoom')}:"/>
+	      <mx:HSlider 
+	         id="zoomSlider" 
+	         minimum="50" maximum="1000" value="100"  
+	         snapInterval="1" liveDragging="true" 
+	         change="onZoom( zoomSlider.value );"  />
+	   </mx:HBox>  	
+	</mx:VBox>
+	
+
+</DraggablePanel>

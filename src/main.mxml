@@ -3,11 +3,11 @@
 	xmlns:screens="org.findikproject.screens.*" pageTitle="Findik-Web Manager" 
 	xmlns:components="org.findikproject.components.*"
 	xmlns:views="org.findikproject.views.*">
-<mx:Style source="/assets/main.css"/>
+<mx:Style source="/assets/css/main.css"/>
 <mx:Metadata>
 	[ResourceBundle("resources")]  
 </mx:Metadata>
-
+<!--
 <mx:states> 
 	<mx:State name="loggedin">
 		<mx:RemoveChild target="{loginCanvas}"/>
@@ -68,7 +68,7 @@
 <mx:StringValidator source="{username}" property="text" maxLength="32" required="true" id="usernameValidator" />
 <mx:StringValidator source="{password}" minLength="6" maxLength="32" property="text"  required="true" id="passwordValidator" />
 
-<!--
-<views:StartPage />
 -->
+<views:StartPage />
+
 </mx:Application>

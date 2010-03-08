@@ -15,6 +15,8 @@
 	require_once('services/ACLRuleService.php');
 	require_once('services/ACLFilterParamService.php');
 	require_once('services/BackupService.php');
+	require_once('services/LiveLogService.php');
+	require_once('services/BTKTimelineService.php');
 
 	$server = new Zend_Amf_Server();
 	
@@ -31,7 +33,9 @@
 			->setClass("MimeCrossService")
 			->setClass("ACLRuleService")
 			->setClass("ACLFilterParamService")
-			->setClass("BackupService");
+			->setClass("BackupService")
+			->setClass("LiveLogService")
+			->setClass("BTKTimelineService");
 	
 	//Mapping the ActionScript VO to the PHP VO
 	//you don't have to add the package name

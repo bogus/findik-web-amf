@@ -41,7 +41,7 @@
 	]]>
 </mx:Script>
 	<FileDownload id="fileDownload" pb="{downloadProgress}" btn="{cancelDownload}" grid="{backupGrid}"/>
-	<DraggablePanel x="59" y="10" width="454" height="403" layout="absolute" 
+	<DraggablePanel x="59" y="10" layout="absolute" 
 		title="{resourceManager.getString('resources', 'backup.title')}"
 		titleIcon="@Embed('/assets/images/icons/16x16/database.png')"
 		backgroundImage="@Embed('/assets/images/icons/database.png')">
