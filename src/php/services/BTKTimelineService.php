@@ -12,7 +12,7 @@ class BTKTimelineService {
 	     //connect to the database.
 	     $DB = connect_db(false);
 	     //retrieve all rows
-	     $rs = $DB->Execute("SELECT * FROM service_status ORDER BY id");
+	     $rs = $DB->Execute("SELECT * FROM btk_service_status ORDER BY id");
 	     $ret = array();
 	     while (!$rs->EOF) {
 		     $tmp = new VOTimeline();

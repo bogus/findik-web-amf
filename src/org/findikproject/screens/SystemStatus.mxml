@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DraggablePanel	layout="absolute"
+		xmlns:mx="http://www.adobe.com/2006/mxml" xmlns="org.findikproject.components.*"
+		title="{resourceManager.getString('resources', 'dashboard.system.title')}"
+		titleIcon="@Embed('/assets/images/icons/16x16/internet.png')" 
+		creationComplete="init()">
+	<mx:Metadata>
+		[ResourceBundle("resources")]
+	</mx:Metadata>
+	
+<mx:Script>
+	<![CDATA[
+		import mx.formatters.NumberFormatter;
+		import mx.collections.ArrayCollection;
+		import mx.controls.Alert;
+		import mx.rpc.events.FaultEvent;
+		import mx.rpc.events.ResultEvent;
+	
+			[Bindable]
+			private var systemInfo:Object;
+			[Bindable]
+			private var allMemory:ArrayCollection;
+
+			
+			private function init():void {
+				setLogTimer();
+				httpService.send();
+			}
+			
+			
+			private function resultHandler(event:ResultEvent):void {
+			 	systemInfo = event.result as Object;
+			 	allMemory = new ArrayCollection([
+			        {Label:resourceManager.getString('resources', 'dashboard.system.free'), Value:2000},
+			        {Label:resourceManager.getString('resources', 'dashboard.system.used'), Value:1000}
+			     ]);
+			 	allMemory.getItemAt(0).Value=systemInfo.phpsysinfo.Memory.Free / 1000000;
+			 	allMemory.getItemAt(1).Value=systemInfo.phpsysinfo.Memory.Used / 1000000;
+			}
+			private function faultHandler(event:FaultEvent):void {
+				(event.target as HTTPService).send();	
+			}
+			
+			private function setLogTimer():void {
+				var timer:Timer = new Timer(60000);
+				timer.addEventListener(TimerEvent.TIMER, timerHandler);
+				timer.start();
+			}
+			
+			private function timerHandler(e:TimerEvent):void{
+		        httpService.send();
+		    }
+		    
+		    private function format(item:Object, column:DataGridColumn):String{
+	            var number:Number=item[column.dataField];
+	            var numberFormatter:NumberFormatter = new NumberFormatter();
+	            numberFormatter.precision = 2;
+	            numberFormatter.thousandsSeparatorTo = "";
+	            if(number > (1000*1000*1000)) {
+		            number = number / (1000 * 1000 * 1000); 
+	            	return numberFormatter.format(number) + " GB";
+	            } else {
+	            	number = number / (1000 * 1000); 
+	            	return numberFormatter.format(number) + " MB";
+	            }
+	        }
+	
+	]]>
+</mx:Script>
+	<mx:HTTPService id="httpService" url="sysinfo/xml.php?plugin=complete&amp;r={Math.random().toString()}"
+		result="resultHandler(event)" method="POST" showBusyCursor="true"
+		fault="faultHandler(event)"></mx:HTTPService>
+	<mx:VBox>
+		<mx:HBox>
+			<mx:Form x="10" y="10">
+				<mx:FormHeading label="{resourceManager.getString('resources', 'dashboard.system.general')}" />
+				<mx:FormItem label="{resourceManager.getString('resources', 'dashboard.system.hostname')}">
+					<mx:Label text="{systemInfo.phpsysinfo.Vitals.Hostname}"/>
+				</mx:FormItem>
+				<mx:FormItem label="{resourceManager.getString('resources', 'dashboard.system.ip')}">
+					<mx:Label text="{systemInfo.phpsysinfo.Vitals.IPAddr}"/>
+				</mx:FormItem>
+				<mx:FormItem label="{resourceManager.getString('resources', 'dashboard.system.kernel')}">
+					<mx:Label text="{systemInfo.phpsysinfo.Vitals.Kernel}"/>
+				</mx:FormItem>
+				<mx:FormItem label="{resourceManager.getString('resources', 'dashboard.system.distro')}">
+					<mx:Label text="{systemInfo.phpsysinfo.Vitals.Distro}"/>
+				</mx:FormItem>
+				<mx:FormItem label="{resourceManager.getString('resources', 'dashboard.system.uptime')}">
+					<mx:Label text="{Math.floor(systemInfo.phpsysinfo.Vitals.Uptime / (60*60*24)).toFixed(0) + 'days ' + 
+					Math.floor((systemInfo.phpsysinfo.Vitals.Uptime % (60*60*24))/ (60*60)).toFixed(0) + 'hours ' + 
+					((systemInfo.phpsysinfo.Vitals.Uptime % (60*60))/ (60)).toFixed(1) + 'mins'}"/>
+				</mx:FormItem>
+				<mx:FormItem label="{resourceManager.getString('resources', 'dashboard.system.load')}">
+					<mx:Label text="{systemInfo.phpsysinfo.Vitals.LoadAvg}"/> 
+				</mx:FormItem>
+			</mx:Form>
+			<mx:VBox>
+				<mx:Label text="{resourceManager.getString('resources', 'dashboard.system.memory')}" />
+				<mx:PieChart id="myChart" dataProvider="{allMemory}" showDataTips="true" innerRadius=".3"
+					width="150" height="150">
+			        <mx:series>
+			           <mx:PieSeries 
+			                field="Value"
+			                nameField="Label" />
+			        </mx:series>
+			     </mx:PieChart>
+			     <mx:Legend dataProvider="{myChart}" direction="horizontal"/>
+			</mx:VBox>
+		</mx:HBox>
+		<mx:HRule width="100%" />
+		<mx:Label text="{resourceManager.getString('resources', 'dashboard.system.network')}" />
+		<mx:DataGrid dataProvider="{systemInfo.phpsysinfo.Network.NetDevice}" rowCount="5" width="100%">
+			<mx:columns>
+                <mx:DataGridColumn dataField="Name" headerText="{resourceManager.getString('resources', 'dashboard.system.name')}"/>
+                <mx:DataGridColumn dataField="RxBytes" labelFunction="format" headerText="{resourceManager.getString('resources', 'dashboard.system.rx')}"/>
+                <mx:DataGridColumn dataField="TxBytes" labelFunction="format" headerText="{resourceManager.getString('resources', 'dashboard.system.tx')}"/>
+                <mx:DataGridColumn dataField="Err" labelFunction="format" headerText="{resourceManager.getString('resources', 'dashboard.system.error')}"/>
+                <mx:DataGridColumn dataField="Drops" labelFunction="format" headerText="{resourceManager.getString('resources', 'dashboard.system.drop')}"/>
+            </mx:columns>
+		</mx:DataGrid>	
+		<mx:HRule width="100%" />
+		<mx:Label text="{resourceManager.getString('resources', 'dashboard.system.storage')}" />
+		<mx:DataGrid dataProvider="{systemInfo.phpsysinfo.FileSystem.Mount}" rowCount="5" width="100%">
+			<mx:columns>
+                <mx:DataGridColumn dataField="FSType" headerText="{resourceManager.getString('resources', 'dashboard.system.fs')}"/>
+                <mx:DataGridColumn dataField="Name" headerText="{resourceManager.getString('resources', 'dashboard.system.name')}"/>
+                <mx:DataGridColumn dataField="Free" labelFunction="format" headerText="{resourceManager.getString('resources', 'dashboard.system.free')}"/>
+                <mx:DataGridColumn dataField="Total" labelFunction="format" headerText="{resourceManager.getString('resources', 'dashboard.system.used')}"/>
+                <mx:DataGridColumn dataField="Percent" headerText="{resourceManager.getString('resources', 'dashboard.system.percentage')}"/>
+            </mx:columns>
+		</mx:DataGrid>	
+	</mx:VBox>
+	
+     
+	
+</DraggablePanel>
+

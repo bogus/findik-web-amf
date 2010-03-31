@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <DraggablePanel xmlns="org.findikproject.components.*" xmlns:mx="http://www.adobe.com/2006/mxml"
 	xmlns:validators="org.findikproject.validators.*" layout="absolute"
-	creationComplete="myRemote.getData();"
+	creationComplete="myRemote.getData();" x="100" y="50"
 	titleIcon="@Embed('/assets/images/icons/16x16/kuser.png')" 
 	backgroundImage="@Embed('/assets/images/icons/Community Help.png')" 
 	title="{resourceManager.getString('resources', 'userman.title')}"
@@ -176,7 +176,7 @@
 ]]>
 </mx:Script>
 
-	<DoubleClickDataGrid x="0" y="0" width="330" height="336" rowCount="4" id="userGrid" alpha="0.5"
+	<DoubleClickDataGrid width="330" height="336" rowCount="4" id="userGrid" alpha="0.5"
 				itemEditEnd="update(event);"  editable="true" dragEnabled="true" dropEnabled="false"
 				change="selectedItemChanged();">
 			<columns>
@@ -185,7 +185,7 @@
 				<mx:DataGridColumn dataField="password" editable="false" visible="false" headerText="{resourceManager.getString('resources', 'userman.password')}"/>
 			</columns>
 	</DoubleClickDataGrid>
-	<mx:Form y="0" id="newUser" x="330"  width="243" height="214">
+	<mx:Form y="0" id="newUser" x="330"  width="243" height="214" defaultButton="{addUserButton}">
 		<mx:FormItem width="202">
 			<mx:Text text="{resourceManager.getString('resources', 'userman.username')}"/>
 			<mx:TextInput id="username" x="109" y="321"/>		
@@ -200,7 +200,7 @@
 		</mx:FormItem>
 		<mx:FormItem>
 			<mx:Button label="{resourceManager.getString('resources', 'userman.add')}" 
-				click="addUser();" enabled="{checkAdmin()}"	
+				click="addUser();" enabled="{checkAdmin()}"	id="addUserButton"
 				x="287" y="321" icon="@Embed('/assets/images/icons/16x16/edit_add.png')">
 				</mx:Button>		
 		</mx:FormItem>

@@ -17,12 +17,19 @@
 
 Application {
    color: #000000;
-   /*borderSkin: ClassReference("org.findikproject.components.RepeatedBackground"); 
-   background-image: Embed("../images/grey.jpg");
-   font-family: myFontFamily;*/
+   /*borderSkin: ClassReference("org.findikproject.components.RepeatedBackground");*/
+   background-image: Embed("../images/bcg.gif");
+   background-repeat: repeat;
+   borderSkin: ClassReference("com.degrafa.skins.CSSSkin");
+   /*font-family: myFontFamily;*/
    backgroundGradientColors: #0b333c, #68808c;
 }
-
+/*
+Canvas {
+	borderSkin: ClassReference("org.findikproject.components.RepeatedBackground"); 
+   	background-image: Embed("../images/bcg.gif");
+}
+*/
 MenuBar {
    color: #000000;
    font-weight: bold;

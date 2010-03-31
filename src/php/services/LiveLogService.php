@@ -35,7 +35,7 @@ class LiveLogService {
 		     }
 		     $ret[] = $tmp;
 	     }
-	     return $ret;
+	     return array_reverse($ret);
 	}
 }
 ?>

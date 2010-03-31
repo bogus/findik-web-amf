@@ -163,50 +163,73 @@
 	<mx:Image id="image"
 			        source="@Embed('/assets/images/remove.png')" 
 			        dragDrop="deleteDragDrop(event);" dragEnter="deleteDragEnter(event);"
-			        x="968" y="524" width="64" height="64"/>
-	
-	<RemoteDoubleClickDataGrid width="291" height="366" rowCount="4" id="mimeGroupGrid" alpha="0.5"
-				dragEnabled="true" editable="true" dropEnabled="false" 
-				x="0" y="0" allowMultipleSelection="true"
-				remoteDestination="zend" remoteSource="MimeTypeGroupService"
-				statusLabel="{resultLabel}" statusImage="{resultImage}"
-				creationComplete="mimeGroupGrid.init();">				
-			<columns>
-				<mx:DataGridColumn dataField="id" editable="false" visible="false"/>
-				<mx:DataGridColumn dataField="name" editable="true" headerText="{resourceManager.getString('resources', 'mime.groupname')}"/>
-				<mx:DataGridColumn dataField="crossCount" width="100" editable="false" headerText="{resourceManager.getString('resources', 'mime.groupcount')}"/>
-			</columns>
-	</RemoteDoubleClickDataGrid>
-	
-	<mx:HRule x="684" y="30" width="348"/>
-	<mx:Label x="684" y="6" text="{resourceManager.getString('resources', 'mime.selectedgroup')}" id="selectedCategoryName"/>
-	<mx:Button x="10" y="374" label="{resourceManager.getString('resources', 'mime.selectgroup')}" width="161"
-		click="changeSelectedCategory();" icon="@Embed('/assets/images/icons/16x16/outbox.png')"/>
-	<RemoteDoubleClickDataGrid width="367" height="366" rowCount="4" id="mimeGrid" alpha="0.5"
-				dragEnabled="true" editable="true" dropEnabled="false" 
-				x="299" y="0" allowMultipleSelection="true"
-				remoteDestination="zend" remoteSource="MimeTypeService"
-				statusLabel="{resultLabel}" statusImage="{resultImage}"
-				creationComplete="mimeGrid.init();">				
-			<columns>
-				<mx:DataGridColumn dataField="id" editable="false" visible="false"/>
-				<mx:DataGridColumn dataField="fileExt" width="100" editable="true" headerText="{resourceManager.getString('resources', 'mime.fileext')}"/>
-				<mx:DataGridColumn dataField="mimeType" editable="true" headerText="{resourceManager.getString('resources', 'mime.mimetype')}"/>
-			</columns>
-	</RemoteDoubleClickDataGrid>
-	
-	<mx:Form x="3" y="422" width="340" height="70" cornerRadius="3" borderStyle="solid" 
-		borderThickness="2" backgroundColor="#F3F3F3" paddingTop="3" paddingBottom="3">
+			        x="968" y="454" width="64" height="64"/>
+	<mx:HBox width="100%">
+		<mx:VBox>
+			<RemoteDoubleClickDataGrid width="291" height="300" rowCount="4" id="mimeGroupGrid" 
+						dragEnabled="true" editable="true" dropEnabled="false" 
+						allowMultipleSelection="true" alpha="0.5"
+						remoteDestination="zend" remoteSource="MimeTypeGroupService"
+						statusLabel="{resultLabel}" statusImage="{resultImage}"
+						creationComplete="mimeGroupGrid.init();">				
+					<columns>
+						<mx:DataGridColumn dataField="id" editable="false" visible="false"/>
+						<mx:DataGridColumn dataField="name" editable="true" headerText="{resourceManager.getString('resources', 'mime.groupname')}"/>
+						<mx:DataGridColumn dataField="crossCount" width="100" editable="false" headerText="{resourceManager.getString('resources', 'mime.groupcount')}"/>
+					</columns>
+			</RemoteDoubleClickDataGrid>
+			<mx:Button x="10" y="374" label="{resourceManager.getString('resources', 'mime.selectgroup')}" width="161"
+				click="changeSelectedCategory();" icon="@Embed('/assets/images/icons/16x16/outbox.png')"/>
+			
+		</mx:VBox>
+			
+		<RemoteDoubleClickDataGrid width="367" height="300" rowCount="4" id="mimeGrid" alpha="0.5"
+					dragEnabled="true" editable="true" dropEnabled="false" 
+					allowMultipleSelection="true"
+					remoteDestination="zend" remoteSource="MimeTypeService"
+					statusLabel="{resultLabel}" statusImage="{resultImage}"
+					creationComplete="mimeGrid.init();">				
+				<columns>
+					<mx:DataGridColumn dataField="id" editable="false" visible="false"/>
+					<mx:DataGridColumn dataField="fileExt" width="100" editable="true" headerText="{resourceManager.getString('resources', 'mime.fileext')}"/>
+					<mx:DataGridColumn dataField="mimeType" editable="true" headerText="{resourceManager.getString('resources', 'mime.mimetype')}"/>
+				</columns>
+		</RemoteDoubleClickDataGrid>
+		<mx:VRule height="100%"/>
+		<mx:VBox width="100%">			
+			<mx:Label text="{resourceManager.getString('resources', 'mime.selectedgroup')}" id="selectedCategoryName"/>
+			<mx:HRule width="100%"/>
+			<PaginatedDoubleClickDataGrid height="270" width="100%" rowCount="4" id="mimeCrossGrid" alpha="0.5"
+						dragEnabled="true" editable="false" 
+						allowMultipleSelection="true"
+						remoteDestination="zend" remoteSource="MimeCrossService"
+						statusLabel="{resultLabel}" statusImage="{resultImage}"
+						creationComplete="mimeCrossGrid.init();"
+						dragDrop="addCrossDragDrop(event);" dragEnter="addCrossDragEnter(event);">				
+					<columns>
+						<mx:DataGridColumn dataField="id" editable="false" visible="false"/>
+						<mx:DataGridColumn dataField="groupId" editable="false" visible="false"/>
+						<mx:DataGridColumn dataField="mimeTypeId" editable="false" visible="false"/>
+						<mx:DataGridColumn dataField="fileExt" width="100" editable="false" headerText="{resourceManager.getString('resources', 'mime.type')}"/>
+						<mx:DataGridColumn dataField="mimeType" width="100" editable="false" headerText="{resourceManager.getString('resources', 'mime.group')}"/>
+					</columns>
+			</PaginatedDoubleClickDataGrid>
+		</mx:VBox>		
+	</mx:HBox>
+	<mx:Form x="3" y="352" width="340" height="70" cornerRadius="3" borderStyle="solid" 
+		borderThickness="2" backgroundColor="#F3F3F3" paddingTop="3" paddingBottom="3"
+		defaultButton="{addGroupButton}">
 		<mx:FormItem label="{resourceManager.getString('resources', 'mime.group')}">
 			<mx:TextInput width="141" id="newGroup"/>
 		</mx:FormItem>
 		<mx:FormItem>
-			<mx:Button label="{resourceManager.getString('resources', 'mime.addgroup')}" 
+			<mx:Button label="{resourceManager.getString('resources', 'mime.addgroup')}" id="addGroupButton"
 				click="addGroup();" icon="@Embed('/assets/images/icons/16x16/edit_add.png')"/>
 		</mx:FormItem>
 	</mx:Form>
-	<mx:Form x="3" y="495" width="340" height="100" cornerRadius="3" borderStyle="solid" 
-		borderThickness="2" backgroundColor="#F3F3F3" paddingTop="3" paddingBottom="3">
+	<mx:Form x="3" y="425" width="340" height="100" cornerRadius="3" borderStyle="solid" 
+		borderThickness="2" backgroundColor="#F3F3F3" paddingTop="3" paddingBottom="3"
+		defaultButton="{addMimeButton}">
 		<mx:FormItem label="{resourceManager.getString('resources', 'mime.fileext')}">
 			<mx:TextInput width="80" id="newExtension"/>
 		</mx:FormItem>
@@ -214,11 +237,12 @@
 			<mx:TextInput width="141" id="newMimetype"/>
 		</mx:FormItem>
 		<mx:FormItem>
-			<mx:Button label="{resourceManager.getString('resources', 'mime.addmime')}" 
+			<mx:Button label="{resourceManager.getString('resources', 'mime.addmime')}" id="addMimeButton" 
 				click="addMimetype();" icon="@Embed('/assets/images/icons/16x16/edit_add.png')"/>
 		</mx:FormItem>
 	</mx:Form>
-	<mx:Form x="346" y="422" width="360" height="173" borderStyle="solid" cornerRadius="3" borderThickness="2" backgroundColor="#F3F3F3" paddingTop="3" paddingBottom="3">
+	<mx:Form x="346" y="352" width="370" height="173" borderStyle="solid" cornerRadius="3" 
+		borderThickness="2" backgroundColor="#F3F3F3" paddingTop="3" paddingBottom="3" defaultButton="{searchButton}">
 		<mx:FormHeading label="{resourceManager.getString('resources', 'form.search')}" textAlign="left"/>
 		<mx:FormItem label="{resourceManager.getString('resources', 'form.searchkey')}">
 			<mx:TextInput width="150" id="searchKey" />
@@ -231,7 +255,7 @@
 		</mx:FormItem>
 		<mx:FormItem>
 			<mx:Canvas>
-				<mx:Button label="{resourceManager.getString('resources', 'form.search')}" 
+				<mx:Button label="{resourceManager.getString('resources', 'form.search')}" id="searchButton"
 					click="search();" icon="@Embed('/assets/images/icons/16x16/xmag.png')"/>
 				<mx:Button x="90" label="{resourceManager.getString('resources', 'form.clearsearch')}" 
 					click="clearSearch();" icon="@Embed('/assets/images/icons/16x16/recur.png')"/>
@@ -242,22 +266,7 @@
 	<mx:StringValidator id="groupNameValidator" required="true" minLength="3" maxLength="32" source="{newGroup}" property="text"/>
 	<mx:StringValidator id="extensionValidator" required="true" minLength="2" maxLength="7" source="{newExtension}" property="text"/>
 	<mx:StringValidator id="searchKeyValidator" required="true" minLength="2" source="{searchKey}" property="text"/>
-	<mx:VRule x="674" y="40" height="356"/>
-	<PaginatedDoubleClickDataGrid width="348" height="326" rowCount="4" id="mimeCrossGrid" alpha="0.5"
-				dragEnabled="true" editable="false" 
-				x="684" y="40" allowMultipleSelection="true"
-				remoteDestination="zend" remoteSource="MimeCrossService"
-				statusLabel="{resultLabel}" statusImage="{resultImage}"
-				creationComplete="mimeCrossGrid.init();"
-				dragDrop="addCrossDragDrop(event);" dragEnter="addCrossDragEnter(event);">				
-			<columns>
-				<mx:DataGridColumn dataField="id" editable="false" visible="false"/>
-				<mx:DataGridColumn dataField="groupId" editable="false" visible="false"/>
-				<mx:DataGridColumn dataField="mimeTypeId" editable="false" visible="false"/>
-				<mx:DataGridColumn dataField="fileExt" width="100" editable="false" headerText="{resourceManager.getString('resources', 'mime.type')}"/>
-				<mx:DataGridColumn dataField="mimeType" width="100" editable="false" headerText="{resourceManager.getString('resources', 'mime.group')}"/>
-			</columns>
-	</PaginatedDoubleClickDataGrid>
+	
 	<mx:ControlBar horizontalAlign="right">
 		<mx:Image width="16" height="16" id="resultImage"/>
 		<mx:Label id="resultLabel"/>

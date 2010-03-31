@@ -277,7 +277,8 @@
 		
 	
 	<mx:Form x="3" y="422" width="340" height="173" cornerRadius="3" borderStyle="solid" 
-		borderThickness="2" backgroundColor="#F3F3F3" paddingTop="3" paddingBottom="3">
+		borderThickness="2" backgroundColor="#F3F3F3" paddingTop="3" paddingBottom="3"
+		defaultButton="{addContentButton}">
 		<mx:FormHeading label="{resourceManager.getString('resources', 'form.addformheader')}" textAlign="left"/>
 		<mx:FormItem label="{resourceManager.getString('resources', 'form.type')}">
 			<mx:ComboBox width="130" id="typeCombo">
@@ -295,11 +296,13 @@
 			<mx:TextArea width="232" id="newData" height="64" />
 		</mx:FormItem>
 		<mx:FormItem>
-			<mx:Button label="{resourceManager.getString('resources', 'content.add')}" 
+			<mx:Button label="{resourceManager.getString('resources', 'content.add')}" id="addContentButton" 
 				click="add();" icon="@Embed('/assets/images/icons/16x16/edit_add.png')"/>
 		</mx:FormItem>
 	</mx:Form>
-	<mx:Form x="346" y="422" width="360" height="173" borderStyle="solid" cornerRadius="3" borderThickness="2" backgroundColor="#F3F3F3" paddingTop="3" paddingBottom="3">
+	<mx:Form x="346" y="422" width="370" height="173" borderStyle="solid" cornerRadius="3" 
+		borderThickness="2" backgroundColor="#F3F3F3" paddingTop="3" paddingBottom="3"
+		defaultButton="{searchButton}">
 		<mx:FormHeading label="{resourceManager.getString('resources', 'form.search')}" textAlign="left"/>
 		<mx:FormItem label="{resourceManager.getString('resources', 'form.searchkey')}">
 			<mx:TextInput width="150" id="searchKey" />
@@ -322,7 +325,7 @@
 		</mx:FormItem>
 		<mx:FormItem>
 			<mx:Canvas>
-				<mx:Button label="{resourceManager.getString('resources', 'form.search')}" 
+				<mx:Button label="{resourceManager.getString('resources', 'form.search')}" id="searchButton" 
 					click="search();" icon="@Embed('/assets/images/icons/16x16/xmag.png')"/>
 				<mx:Button x="90" label="{resourceManager.getString('resources', 'form.clearsearch')}" 
 					click="clearSearch();" icon="@Embed('/assets/images/icons/16x16/recur.png')"/>

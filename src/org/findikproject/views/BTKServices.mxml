@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:screens="org.findikproject.screens.*"
+	width="100%" height="100%">
+	<screens:BTKDbUpdate x="{timeline.x + timeline.width + 20}" y="15" id="dbUpdate"/>
+	<screens:BTKTimestampRetriever x="{timeline.x + timeline.width + 20}" 
+		y="{dbUpdate.y + dbUpdate.height + 20}" id="tsRetriever"/>
+	<screens:BTKTimeline id="timeline" x="20" y="15"/>
+	<screens:BTKRegistration x="20" y="{timeline.height + timeline.y + 20}" />
+</mx:Canvas>

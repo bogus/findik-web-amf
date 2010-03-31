@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DraggablePanel xmlns="org.findikproject.components.*" xmlns:mx="http://www.adobe.com/2006/mxml" 
+	layout="absolute" title="{resourceManager.getString('resources', 'btk.reg.title')}"
+	creationComplete="init()">
+	<mx:Script>
+		<![CDATA[
+			import org.findikproject.beans.VOACLFilterParam;
+			import mx.collections.ArrayCollection;
+			import org.findikproject.beans.VOBTKUserInfo;
+			import org.findikproject.util.RemoteDataObjectEvent;
+			import org.findikproject.components.RemoteDataObject;
+			
+			[Bindable]
+			private var remoteDataObject:RemoteDataObject;
+			[Bindable]
+			private var userInfo:VOBTKUserInfo;
+			
+			private function init():void {
+				remoteDataObject = new RemoteDataObject("BTKUserInfoService",null,null);
+				remoteDataObject.addEventListener(RemoteDataObjectEvent.DATA_RECEIVED, dataReceived);
+				remoteDataObject.init();
+			}
+			
+			private function dataReceived(event:RemoteDataObjectEvent):void { 
+				var userData:ArrayCollection = new ArrayCollection(remoteDataObject.remoteData as Array);
+				userInfo = userData.getItemAt(0) as VOBTKUserInfo;
+			}
+			
+			private function updateUserInfo():void {
+				userInfo.tsUsername = tsUsername.text;
+				userInfo.tsPassword = tsPassword.text;  				
+				userInfo.regUsername = regUsername.text;
+				userInfo.regPassword = regPassword.text;  
+				remoteDataObject.updateObject(userInfo);
+			}
+			
+			private function testUserInfo():void {
+				userInfo.tsUsername = tsUsername.text;
+				userInfo.tsPassword = tsPassword.text;  				
+				userInfo.regUsername = regUsername.text;
+				userInfo.regPassword = regPassword.text;
+				remoteDataObject.getRemoteObject().testUserInfo(userInfo);	
+			}
+		]]>
+	</mx:Script>
+	<mx:VBox paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10">
+		<mx:HBox>
+			<mx:Form defaultButton="{updateRegButton}">
+				<mx:FormHeading label="{resourceManager.getString('resources', 'btk.reg.reg')}"/>
+				<mx:FormItem label="{resourceManager.getString('resources', 'btk.reg.username')}">
+					<mx:TextInput text="{userInfo.regUsername}" id="regUsername"/>
+				</mx:FormItem>
+				<mx:FormItem label="{resourceManager.getString('resources', 'btk.reg.password')}">
+					<mx:TextInput text="{userInfo.regPassword}" id="regPassword"/>
+				</mx:FormItem>
+				<mx:FormItem>
+					<mx:Button label="{resourceManager.getString('resources', 'btk.reg.save')}" 
+						id="updateRegButton" click="updateUserInfo()"/>
+					<mx:Button label="{resourceManager.getString('resources', 'btk.reg.test')}" 
+						id="testRegButton" click="testUserInfo()"/>
+				</mx:FormItem>
+			</mx:Form>
+			<mx:VRule height="100%" />
+			<mx:Form defaultButton="{updateTSButton}">
+				<mx:FormHeading label="{resourceManager.getString('resources', 'btk.tsret.reg')}"/>
+				<mx:FormItem label="{resourceManager.getString('resources', 'btk.tsret.username')}">
+					<mx:TextInput text="{userInfo.tsUsername}" id="tsUsername"/>
+				</mx:FormItem>
+				<mx:FormItem label="{resourceManager.getString('resources', 'btk.tsret.password')}">
+					<mx:TextInput text="{userInfo.tsPassword}" id="tsPassword"/>
+				</mx:FormItem>
+				<mx:FormItem>
+					<mx:Button label="{resourceManager.getString('resources', 'btk.tsret.setcred')}" 
+						id="updateTSButton" click="updateUserInfo()"/>
+				</mx:FormItem>
+			</mx:Form>
+		</mx:HBox>
+		
+	</mx:VBox>	
+</DraggablePanel>

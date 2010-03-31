@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DraggablePanel
+	xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns="org.findikproject.components.*" layout="absolute"
+	title="{resourceManager.getString('resources', 'acl.title')}"
+	titleIcon="@Embed('/assets/images/icons/16x16/internet.png')" 
+	backgroundImage="@Embed('/assets/images/icons/internet.png')"
+	backgroundSize="200px">
+<mx:Metadata>
+	[ResourceBundle("resources")]
+</mx:Metadata>
+<mx:Script>
+	<![CDATA[
+		import org.findikproject.beans.VOACLRule;
+		import mx.controls.Alert;
+		import org.findikproject.components.DoubleClickDataGrid;
+		import org.findikproject.beans.VOTimeTable;
+		import mx.events.ValidationResultEvent;
+		import mx.collections.ArrayCollection;
+		import mx.collections.IList;
+		import mx.managers.DragManager;
+		import mx.core.IUIComponent;
+		import mx.controls.DataGrid;
+	import mx.events.DragEvent;
+	import mx.events.DataGridEvent;
+		
+	private function rankDragEnter(event:DragEvent):void {
+	    var obj:IUIComponent = IUIComponent(event.currentTarget);
+	    if((event.dragInitiator as RemoteDoubleClickDataGrid).id.toString() == "aclRuleGrid")
+	    	DragManager.acceptDragDrop(obj);	
+	}
+	
+	private function rankDragDrop(event:DragEvent):void {
+		if (event.dragSource.hasFormat("items"))
+	    {
+	    	var itemsArray:Array = event.dragSource.dataForFormat("items") as Array;
+	    	var dropTarget:DataGrid = DataGrid(event.currentTarget);
+	    	var dragTarget:DataGrid = DataGrid(event.dragInitiator);
+	    	var dropIndex:int = dropTarget.calculateDropIndex(event);
+	    	if(dropIndex >= dragTarget.dataProvider.length)
+	    		dropIndex = dragTarget.dataProvider.length - 1;
+	    	if(dropIndex != dragTarget.selectedIndex) { 
+		    	var obj:Object = dragTarget.selectedItem;
+		    	IList(dragTarget.dataProvider).removeItemAt(dragTarget.selectedIndex);
+		    	IList(dragTarget.dataProvider).addItemAt(obj,dropIndex);
+		    	aclRuleGrid.getRemoteObject().updateRank(itemsArray[0],dropIndex);
+		    	IList(dragTarget.dataProvider).getItemAt(dropIndex).rank = dropIndex;
+		    }
+		    aclRuleGrid.getGridData();
+	    }
+	}
+	
+	private function displayDayNames(item:Object, col:DataGridColumn):String
+    {
+    	var days:int = (item as VOTimeTable).dayOfWeek;
+        var list:ArrayCollection = new ArrayCollection();
+        var finalDayStr:String = "";
+        
+        if((days & 2) == 2)
+        	list.addItem(resourceManager.getString('resources', 'timeman.mon'));
+        if((days & 4) == 4)
+        	list.addItem(resourceManager.getString('resources', 'timeman.tue'));
+        if((days & 8) == 8)
+        	list.addItem(resourceManager.getString('resources', 'timeman.wed'));
+        if((days & 16) == 16)
+        	list.addItem(resourceManager.getString('resources', 'timeman.thu'));
+        if((days & 32) == 32)
+        	list.addItem(resourceManager.getString('resources', 'timeman.fri'));
+        if((days & 64) == 64)
+        	list.addItem(resourceManager.getString('resources', 'timeman.sat'));
+        if((days & 128) == 128)
+        	list.addItem(resourceManager.getString('resources', 'timeman.sun'));
+        
+        for(var i:int = 0; i < list.length; i++) {
+        	finalDayStr += list.getItemAt(i);
+        	if(i + 1 < list.length)
+        		finalDayStr += ",";	
+        }
+        	
+		return finalDayStr;
+   	}
+   	
+   	private function add():void {
+		if(ruleNameValidator.validate().type && ValidationResultEvent.VALID) {
+			var arrItem:ArrayCollection = new ArrayCollection();
+			var newRule:Object = new Object();
+			newRule.id = 0;
+			newRule.name = ruleName.text;
+			newRule.desc = ruleDesc.text;
+			newRule.rank = 0;
+			newRule.deny = ruleMethod.selectedIndex;
+			arrItem.addItem(newRule);
+			aclRuleGrid.insert(arrItem.toArray());
+			aclRuleGrid.getGridData();
+		}
+	}
+	
+	private function comboBoxChanged(event:Event):void {
+		var updatedRule:VOACLRule = aclRuleGrid.selectedItem as VOACLRule;
+		updatedRule.av = updateAVPicker.selectedIndex;
+		updatedRule.deny = updateMethodPicker.selectedIndex;
+		aclRuleGrid.updateData(updatedRule);
+	}
+	
+	private function updateRuleData(event:DataGridEvent):void {                 
+        if(event.dataField == "name" || event.dataField == "desc") {
+        	var dataGrid:DoubleClickDataGrid = event.target as DoubleClickDataGrid;
+	        var col:DataGridColumn = dataGrid.columns[event.columnIndex];
+	        var newValue:String = dataGrid.itemEditorInstance[col.editorDataField];
+	        var val:Object = event.itemRenderer.data as Object	
+	        if (newValue == val[event.dataField])
+	           	return;
+	        val[event.dataField] = newValue;
+        }         
+        var updatedRule:Object = new Object();
+        updatedRule.id = aclRuleGrid.editedItemRenderer.data.id;
+        updatedRule.name = aclRuleGrid.editedItemRenderer.data.name;
+        updatedRule.desc = aclRuleGrid.editedItemRenderer.data.desc;
+        updatedRule.rank = aclRuleGrid.editedItemRenderer.data.rank;
+        updatedRule.deny = aclRuleGrid.editedItemRenderer.data.deny;
+        updatedRule.av = aclRuleGrid.editedItemRenderer.data.av;
+        aclRuleGrid.updateData(updatedRule);
+        aclRuleGrid.destroyItemEditor();
+        aclRuleGrid.getGridData();  
+    }   
+	]]>
+</mx:Script>
+	
+	<mx:VBox width="100%" > 
+		<mx:HBox width="100%">
+			<RemoteDoubleClickDataGrid rowCount="3" id="aclRuleGrid"
+					dragEnabled="true"	dropEnabled="false" dragMoveEnabled="true" 
+					x="0" y="0" editable="true"
+					remoteDestination="zend" remoteSource="ACLRuleService"
+					statusLabel="{resultLabel}" statusImage="{resultImage}"
+					creationComplete="aclRuleGrid.init();aclRuleGrid.removeEventListener(DataGridEvent.ITEM_EDIT_END,aclRuleGrid.updateGrid);" 
+					height="100%" width="400"  itemEditEnd="updateRuleData(event);"
+					dragDrop="rankDragDrop(event);" dragEnter="rankDragEnter(event);">
+					<columns>
+						<mx:DataGridColumn dataField="id" editable="false" visible="false"/>
+						<mx:DataGridColumn dataField="rank" editable="false" visible="false"/>
+						<mx:DataGridColumn dataField="name" width="150" editable="true" headerText="{resourceManager.getString('resources', 'acl.rulename')}"/>
+						<mx:DataGridColumn dataField="desc" width="250" editable="true" headerText="{resourceManager.getString('resources', 'acl.ruledesc')}"/>
+					</columns>
+			</RemoteDoubleClickDataGrid>
+			<mx:VBox width="100%" paddingTop="10">
+				<mx:Label text="{resourceManager.getString('resources', 'acl.rulename')} : {aclRuleGrid.selectedItem.name}" />
+				<mx:HRule width="100%" />
+				<mx:HBox>
+					<mx:Label text="{resourceManager.getString('resources', 'acl.method')}" />
+					<mx:ComboBox id="updateMethodPicker" selectedIndex="{aclRuleGrid.selectedItem.deny}"
+						change="comboBoxChanged(event)">
+						<mx:dataProvider>
+							<mx:String id="ruleDeny">{resourceManager.getString('resources', 'acl.methoddeny')}</mx:String>
+							<mx:String id="ruleAccept">{resourceManager.getString('resources', 'acl.methodaccept')}</mx:String>
+						</mx:dataProvider>
+					</mx:ComboBox>
+					<mx:Label text="{resourceManager.getString('resources', 'acl.av')}" />			
+					<mx:ComboBox id="updateAVPicker" selectedIndex="{aclRuleGrid.selectedItem.av}"
+						change="comboBoxChanged(event)">
+						<mx:dataProvider>
+							<mx:String id="ruleAVOn">{resourceManager.getString('resources', 'acl.avon')}</mx:String>
+							<mx:String id="ruleAVOff">{resourceManager.getString('resources', 'acl.avoff')}</mx:String>
+						</mx:dataProvider>
+					</mx:ComboBox>
+				</mx:HBox>
+				<mx:HBox>
+					<ACLInnerDataGrid rowCount="6" width="120" dragEnabled="true"	dropEnabled="false" 
+						editable="true" dragInitiatorId="catGrid" 
+						ruleId="{aclRuleGrid.selectedItem.id}" id="catRule"
+						filterGroupName="content" remoteDestination="zend" 
+						remoteSource="ACLFilterParamService"
+						creationComplete="catRule.init();">
+						<columns>
+							<mx:DataGridColumn dataField="id" editable="false" visible="false"/>
+							<mx:DataGridColumn dataField="ruleId" editable="false" visible="false"/>
+							<mx:DataGridColumn dataField="filterKey" editable="false" visible="false"/>
+							<mx:DataGridColumn dataField="param" editable="false" visible="false"/>
+							<mx:DataGridColumn dataField="name" editable="true" headerText="{resourceManager.getString('resources', 'acl.content')}"/>
+						</columns>	
+					</ACLInnerDataGrid>
+					<ACLInnerDataGrid rowCount="6" width="120"	dragEnabled="true"	dropEnabled="false" 
+						editable="true" dragInitiatorId="mimeGroupGrid" ruleId="{aclRuleGrid.selectedItem.id}"
+						filterGroupName="filetype" remoteDestination="zend"  id="mimeGroupRule"
+						remoteSource="ACLFilterParamService"
+						creationComplete="mimeGroupRule.init();">
+						<columns>
+							<mx:DataGridColumn dataField="id" editable="false" visible="false"/>
+							<mx:DataGridColumn dataField="ruleId" editable="false" visible="false"/>
+							<mx:DataGridColumn dataField="filterKey" editable="false" visible="false"/>
+							<mx:DataGridColumn dataField="param" editable="false" visible="false"/>
+							<mx:DataGridColumn dataField="name" editable="true" headerText="{resourceManager.getString('resources', 'acl.mimetype')}"/>
+						</columns>	
+					</ACLInnerDataGrid>
+					<ACLInnerDataGrid rowCount="6" width="120"	dragEnabled="true"	dropEnabled="false" 
+						editable="true" dragInitiatorId="ipGrid" ruleId="{aclRuleGrid.selectedItem.id}"
+						filterGroupName="iptable" remoteDestination="zend" id="ipRule"
+						remoteSource="ACLFilterParamService" 
+						creationComplete="ipRule.init();">
+						<columns>
+							<mx:DataGridColumn dataField="id" editable="false" visible="false"/>
+							<mx:DataGridColumn dataField="ruleId" editable="false" visible="false"/>
+							<mx:DataGridColumn dataField="filterKey" editable="false" visible="false"/>
+							<mx:DataGridColumn dataField="param" editable="false" visible="false"/>
+							<mx:DataGridColumn dataField="name" editable="true" headerText="{resourceManager.getString('resources', 'acl.ipgroups')}"/>
+						</columns>	
+					</ACLInnerDataGrid>
+					<ACLInnerDataGrid rowCount="6" width="120" dragEnabled="true"	dropEnabled="false" 
+						editable="true" dragInitiatorId="timeGrid" ruleId="{aclRuleGrid.selectedItem.id}"
+						filterGroupName="timetable" remoteDestination="zend" id="timeRule"
+						remoteSource="ACLFilterParamService"
+						creationComplete="timeRule.init();">
+						<columns>
+							<mx:DataGridColumn dataField="id" editable="false" visible="false"/>
+							<mx:DataGridColumn dataField="ruleId" editable="false" visible="false"/>
+							<mx:DataGridColumn dataField="filterKey" editable="false" visible="false"/>
+							<mx:DataGridColumn dataField="param" editable="false" visible="false"/>
+							<mx:DataGridColumn dataField="name" editable="true" headerText="{resourceManager.getString('resources', 'acl.timegroups')}"/>
+						</columns>	
+					</ACLInnerDataGrid>
+				</mx:HBox>
+			</mx:VBox>
+		</mx:HBox>
+		<mx:HRule width="100%" />
+		<mx:HBox>
+			<mx:HBox>
+				<mx:Form width="355" height="221.74243" borderStyle="solid" cornerRadius="3" borderThickness="2" 
+					backgroundColor="#F3F3F3" paddingTop="3" paddingBottom="3" defaultButton="{addRuleButton}">
+					<mx:FormHeading label="{resourceManager.getString('resources', 'acl.add')}"/>
+					<mx:FormItem label="{resourceManager.getString('resources', 'acl.rulename')}">
+						<mx:TextInput width="159" id="ruleName"/>
+					</mx:FormItem>
+					<mx:FormItem label="{resourceManager.getString('resources', 'acl.ruledesc')}">
+						<mx:TextArea width="189" height="73" id="ruleDesc"/>
+					</mx:FormItem>
+					<mx:FormItem label="{resourceManager.getString('resources', 'acl.method')}">
+						<mx:ComboBox id="ruleMethod">
+							<mx:dataProvider>
+								<mx:String>{resourceManager.getString('resources', 'acl.methoddeny')}</mx:String>
+								<mx:String>{resourceManager.getString('resources', 'acl.methodaccept')}</mx:String>
+							</mx:dataProvider>
+						</mx:ComboBox>
+					</mx:FormItem>
+					<mx:FormItem>
+						<mx:Button label="{resourceManager.getString('resources', 'acl.add')}" click="add();"
+							icon="@Embed('/assets/images/icons/16x16/edit_add.png')" id="addRuleButton"/>
+					</mx:FormItem>
+				</mx:Form>
+			</mx:HBox>
+			<mx:HBox>
+				<mx:PopUpButton width="150" label="{resourceManager.getString('resources', 'acl.content')}" 
+					closeOnActivity="false" icon="@Embed('/assets/images/icons/16x16/internet.png')">
+					<mx:popUp>
+					<RemoteDoubleClickDataGrid rowCount="5" id="catGrid"
+							dragEnabled="true" dropEnabled="false" 
+							x="0" y="0"	remoteDestination="zend" remoteSource="ContentCategoryService"
+							statusLabel="{resultLabel}" statusImage="{resultImage}"
+							creationComplete="catGrid.init();">				
+						<columns>
+							<mx:DataGridColumn dataField="id" editable="false" visible="false"/>
+							<mx:DataGridColumn dataField="name" width="100" editable="true" headerText="{resourceManager.getString('resources', 'content.catname')}"/>
+							<mx:DataGridColumn dataField="domainCount" editable="true" headerText="{resourceManager.getString('resources', 'content.domainCount')}"/>
+							<mx:DataGridColumn dataField="urlCount" editable="true" headerText="{resourceManager.getString('resources', 'content.urlCount')}"/>
+							<mx:DataGridColumn dataField="regexCount" editable="true" headerText="{resourceManager.getString('resources', 'content.regexCount')}"/>
+						</columns>
+					</RemoteDoubleClickDataGrid>
+					</mx:popUp>
+				</mx:PopUpButton>
+				<mx:PopUpButton width="150" label="{resourceManager.getString('resources', 'acl.mimetype')}" 
+					closeOnActivity="false" icon="@Embed('/assets/images/icons/16x16/mime.png')">
+					<mx:popUp>
+					<RemoteDoubleClickDataGrid rowCount="5" id="mimeGroupGrid"
+							dragEnabled="true" dropEnabled="false" 
+							x="0" y="0" remoteDestination="zend" remoteSource="MimeTypeGroupService"
+							statusLabel="{resultLabel}" statusImage="{resultImage}"
+							creationComplete="mimeGroupGrid.init();">				
+						<columns>
+							<mx:DataGridColumn dataField="id" editable="false" visible="false"/>
+							<mx:DataGridColumn dataField="name" editable="true" headerText="{resourceManager.getString('resources', 'mime.groupname')}"/>
+							<mx:DataGridColumn dataField="crossCount" width="100" editable="false" headerText="{resourceManager.getString('resources', 'mime.groupcount')}"/>
+						</columns>
+					</RemoteDoubleClickDataGrid>
+					</mx:popUp>
+				</mx:PopUpButton>
+				<mx:PopUpButton x="692" width="150" label="{resourceManager.getString('resources', 'acl.ipgroups')}" 
+					closeOnActivity="false" y="376.25" icon="@Embed('/assets/images/icons/16x16/package_network.png')">
+					<mx:popUp>
+					<RemoteDoubleClickDataGrid rowCount="5" id="ipGrid"
+							dragEnabled="true" dropEnabled="false" x="0" y="0"
+							remoteDestination="zend" remoteSource="IPTableService"
+							statusLabel="{resultLabel}" statusImage="{resultImage}"
+							creationComplete="ipGrid.init();">				
+						<columns>
+							<mx:DataGridColumn dataField="id" editable="false" width="0"/>
+							<mx:DataGridColumn dataField="name"  editable="true" headerText="{resourceManager.getString('resources', 'ipman.name')}"/>
+							<mx:DataGridColumn dataField="localIp" editable="false" headerText="{resourceManager.getString('resources', 'ipman.localip')}"/>
+							<mx:DataGridColumn dataField="localMask" editable="false" headerText="{resourceManager.getString('resources', 'ipman.localmask')}"/>
+						</columns>
+					</RemoteDoubleClickDataGrid>
+					</mx:popUp>
+				</mx:PopUpButton>
+				<mx:PopUpButton x="850" width="150" label="{resourceManager.getString('resources', 'acl.timegroups')}" 
+					openAlways="true" closeOnActivity="false" y="376.25" icon="@Embed('/assets/images/icons/16x16/cal.png')">
+					<mx:popUp>
+					<RemoteDoubleClickDataGrid rowCount="5" id="timeGrid"
+							dragEnabled="true"	dropEnabled="false" x="0" y="0"
+							remoteDestination="zend" remoteSource="TimeTableService"
+							statusLabel="{resultLabel}" statusImage="{resultImage}"
+							creationComplete="timeGrid.init();">				
+							<columns>
+								<mx:DataGridColumn dataField="id" editable="false" width="0"/>
+								<mx:DataGridColumn dataField="name" width="100" editable="true" headerText="{resourceManager.getString('resources', 'timeman.name')}"/>
+								<mx:DataGridColumn dataField="startTime" width="70" editable="false" headerText="{resourceManager.getString('resources', 'timeman.starttime')}"/>
+								<mx:DataGridColumn dataField="endTime" width="70" editable="false" headerText="{resourceManager.getString('resources', 'timeman.endtime')}"/>
+								<mx:DataGridColumn dataField="dayOfWeek" editable="false" headerText="{resourceManager.getString('resources', 'timeman.dayofweek')}"
+									labelFunction="displayDayNames"/>
+							</columns>
+					</RemoteDoubleClickDataGrid>
+					</mx:popUp>
+				</mx:PopUpButton>
+			</mx:HBox>
+		</mx:HBox>
+	</mx:VBox>	
+	<mx:StringValidator id="ruleNameValidator" required="true" source="{ruleName}" property="text" maxLength="128" minLength="3"/>
+	<mx:ControlBar horizontalAlign="right">
+		<mx:Image width="16" height="16" id="resultImage"/>
+		<mx:Label id="resultLabel"/>
+	</mx:ControlBar>	
+</DraggablePanel>

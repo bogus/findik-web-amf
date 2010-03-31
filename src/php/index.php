@@ -17,6 +17,10 @@
 	require_once('services/BackupService.php');
 	require_once('services/LiveLogService.php');
 	require_once('services/BTKTimelineService.php');
+	require_once('services/BTKDbUpdateService.php');
+	require_once('services/BTKTimestampHistoryService.php');
+	require_once('services/BTKUserInfoService.php');
+	require_once('services/BTKGeneralInfoService.php');
 
 	$server = new Zend_Amf_Server();
 	
@@ -35,8 +39,12 @@
 			->setClass("ACLFilterParamService")
 			->setClass("BackupService")
 			->setClass("LiveLogService")
-			->setClass("BTKTimelineService");
-	
+			->setClass("BTKTimelineService")
+			->setClass("BTKDbUpdateService")
+			->setClass("BTKTimestampHistoryService")
+			->setClass("BTKUserInfoService")
+			->setClass("BTKGeneralInfoService");
+			
 	//Mapping the ActionScript VO to the PHP VO
 	//you don't have to add the package name
 	$server->setClassMap("VOUser", "VOUser");

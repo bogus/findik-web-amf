@@ -3,7 +3,7 @@
 	xmlns:screens="org.findikproject.screens.*" 
 	xmlns:components="org.findikproject.components.*"
 	xmlns:views="org.findikproject.views.*"
-	creationComplete="currentState='btkReqs'">
+	creationComplete="currentState='dashboard'">
 <mx:Metadata>
 	[ResourceBundle("resources")]
 </mx:Metadata>
@@ -15,11 +15,23 @@
 		import mx.events.MenuEvent;
 		import mx.controls.Alert;
 	    
-	    private var locales:Array = ['en_US', 'tr_TR'];
+	    private var locales:Array = ['tr_TR', 'en_US'];
+	    
+	    [Bindable]
+	    private var advancedView:Boolean = false;
 	    
 		private function menuHandler(event:MenuEvent):void
 		{	
-		   currentState=event.item.@actionState;
+			if(event.item.@actionState != "switchBasic" && event.item.@actionState != "switchAdvanced")
+		   		currentState=event.item.@actionState;
+		   	else {
+		   		if(event.item.@actionState == "switchBasic") {
+		   			advancedView = false;
+		   		} else if(event.item.@actionState == "switchAdvanced") {
+		   			advancedView = true;
+		   		}
+		   		currentState = 'dashboard';
+		   	}
 		}
 		
 		private function localeComboBox_initializeHandler(event:Event):void
@@ -64,8 +76,15 @@
 			var ref:URLRequest = new URLRequest("javascript:location.reload(true)");
 			navigateToURL(ref, "_self");
 		}
+		
+		[Bindable]
+		[Embed(source='/assets/images/bcg.gif')]
+		private var img:Class;
+
 	]]>
 </mx:Script>
+	<mx:Image id="logo" x="{this.width - logo.width - 20}" y="{this.height - logo.height - 20}" 
+    	source="@Embed('/assets/images/findik.png')" width="177" height="152" /> 
 	<mx:states>
 		<mx:State name="dashboard">
 			<mx:AddChild relativeTo="{container}">
@@ -94,7 +113,7 @@
 		</mx:State>
 		<mx:State name="aclBlacklistManagement">
 			<mx:AddChild relativeTo="{container}">
-				<views:ACLManagementCanvas id="aclGenerator" />
+				<views:ACLManagementPanel id="aclGenerator"/>
 			</mx:AddChild>
 		</mx:State>
 		<mx:State name="userManagement">			
@@ -109,28 +128,28 @@
 		</mx:State>
 		<mx:State name="btkReqs">			
 			<mx:AddChild relativeTo="{container}">
-				<!--<views:BTKTimeline id="btkReqs"/>-->
-				 <views:Hebele /> 
+				<views:BTKServices id="btkReqs"/>
 			</mx:AddChild>
 		</mx:State>
 	</mx:states>
 	
 	<mx:Canvas id="container" width="100%" height="100%" x="0" y="23"/>
 	
-	<mx:MenuBar x="0" y="0" width="100%" labelField="@label" id="menubar1" itemClick="menuHandler(event)">
+	<mx:MenuBar x="0" y="0" width="100%" labelField="@label" id="menubar1" 
+		itemClick="menuHandler(event)" visible="{advancedView}">
 	<mx:XMLList>
 		<menuitem label="{resourceManager.getString('resources', 'menu.system')}">
 			<menuitem label="{resourceManager.getString('resources', 'menu.dashboard')}" 
             	actionState="dashboard"/>
-            <menuitem label="Backup / Restore" 
+            <menuitem label="{resourceManager.getString('resources', 'backup.title')}" 
             	actionState="exportImportManagement"/>
-            <menuitem label="User Management" 
+            <menuitem label="{resourceManager.getString('resources', 'menu.user')}" 
             	actionState="userManagement"/>
             <menuitem label="{resourceManager.getString('resources', 'btk.title')}" 
             	actionState="btkReqs"/>
         </menuitem>
         <menuitem label="{resourceManager.getString('resources', 'menu.data')}">
-            <menuitem label="Content Management"
+            <menuitem label="{resourceManager.getString('resources', 'menu.data.content')}"
             	actionState="contentManagement"/>
             <menuitem label="{resourceManager.getString('resources', 'menu.data.mimetype')}" 
             	actionState="mimetypeManagement"/>
@@ -143,6 +162,27 @@
         	<menuitem label="{resourceManager.getString('resources', 'menu.blacklist.acl')}" 
         		actionState="aclBlacklistManagement"/>
         </menuitem>
+        <menuitem label="{resourceManager.getString('resources', 'menu.view')}">
+        	<menuitem label="{resourceManager.getString('resources', 'menu.switchbasic')}" 
+            	actionState="switchBasic"/>
+        </menuitem>
+    </mx:XMLList>
+	</mx:MenuBar>
+	<mx:MenuBar x="0" y="0" width="100%" labelField="@label" id="menubar2" 
+		itemClick="menuHandler(event)" visible="{!advancedView}">
+	<mx:XMLList>
+		<menuitem label="{resourceManager.getString('resources', 'menu.system')}">
+			<menuitem label="{resourceManager.getString('resources', 'menu.dashboard')}" 
+            	actionState="dashboard"/>
+            <menuitem label="{resourceManager.getString('resources', 'menu.user')}" 
+            	actionState="userManagement"/>
+            <menuitem label="{resourceManager.getString('resources', 'btk.title')}" 
+            	actionState="btkReqs"/>
+        </menuitem>
+        <menuitem label="{resourceManager.getString('resources', 'menu.view')}">
+        	<menuitem label="{resourceManager.getString('resources', 'menu.switchadvanced')}" 
+            	actionState="switchAdvanced"/>
+        </menuitem>
     </mx:XMLList>
 	</mx:MenuBar>
 	<mx:ComboBox id="localeComboBox" right="120"
@@ -150,11 +190,12 @@
                  change="localeComboBox_changeHandler(event)">
          <mx:dataProvider> 
 			<mx:Array>
-				<mx:Object id="en_US" label="English" />
 				<mx:Object id="tr_TR" label="Türkçe" />
+				<mx:Object id="en_US" label="English" />
 			</mx:Array>
 		</mx:dataProvider>
     </mx:ComboBox>
-    <mx:Button y="0" label="{SessionValues.authUser.username + ' ' + resourceManager.getString('resources', 'menu.logout')}" 
-    	right="10" width="100" click="logout()"/>             
+    <mx:LinkButton y="0" label="{SessionValues.authUser.username + ' ' + resourceManager.getString('resources', 'menu.logout')}" 
+    	right="10" width="100" click="logout()" height="20"/>
+    
 </mx:Canvas>

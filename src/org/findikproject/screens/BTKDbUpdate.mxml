@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DraggablePanel xmlns="org.findikproject.components.*" xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:validators="org.findikproject.validators.*" layout="absolute"
+	title="{resourceManager.getString('resources', 'btk.dbupdate.title')}">
+<mx:Metadata>
+	[ResourceBundle("resources")]
+</mx:Metadata> 
+<mx:Script>
+	<![CDATA[
+		import mx.formatters.DateFormatter;
+		private function format(item:Object, column:DataGridColumn):String{
+            var time:Number=item[column.dataField];
+            var dateFormatter:DateFormatter = new DateFormatter();
+            dateFormatter.formatString = "JJ:NN DD.MM.YYYY"            
+            return dateFormatter.format(new Date(time));
+        }
+	]]>
+</mx:Script>
+	<RemoteDoubleClickDataGrid rowCount="8" id="dataGrid" alpha="0.5"
+				dragEnabled="false" editable="false"
+				remoteDestination="zend" remoteSource="BTKDbUpdateService"
+				statusLabel="{resultLabel}" statusImage="{resultImage}"
+				creationComplete="dataGrid.init();"
+				dropEnabled="false" x="0" y="0">				
+			<columns>
+				<mx:DataGridColumn dataField="id" editable="false" width="0"/>
+				<mx:DataGridColumn dataField="updateId"  editable="false" headerText="{resourceManager.getString('resources', 'btk.dbupdate.updateid')}"/>
+				<mx:DataGridColumn dataField="updateDate" editable="false" headerText="{resourceManager.getString('resources', 'btk.dbupdate.updatedate')}"
+					labelFunction="format" width="120"/>
+				<mx:DataGridColumn dataField="newRecordCount" editable="false" headerText="{resourceManager.getString('resources', 'btk.dbupdate.newrecord')}"/>
+				<mx:DataGridColumn dataField="deletedRecordCount" editable="false" headerText="{resourceManager.getString('resources', 'btk.dbupdate.deletedrecord')}"/>
+			</columns>
+	</RemoteDoubleClickDataGrid>
+	<mx:ControlBar horizontalAlign="right">
+		<mx:Image width="16" height="16" id="resultImage"/>
+		<mx:Label id="resultLabel"/>
+	</mx:ControlBar>
+</DraggablePanel>

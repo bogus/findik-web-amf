@@ -1,5 +1,7 @@
 package org.findikproject.beans
 {
+	import mx.controls.Alert;
+	
 	[RemoteClass(alias="VOTimeline")]
     [Bindable]
 	public class VOTimeline
@@ -12,24 +14,24 @@ package org.findikproject.beans
         
         public function get startDate():Date
         {
-                return _startDate;
+            return _startDate;
         }
    
         public function set startDate(value:*):void
         {
-        		var str:String = value;
-                _startDate = new Date(Date.parse(str.replace('-','/').replace('-','/')));
+    		var time:Number = value;
+            _startDate = new Date(time);
         } 
         
         public function get endDate():Date
         {
-                return _endDate;
+            return _endDate;
         }
    
         public function set endDate(value:*):void
         {
-        		var str:String = value;
-                _endDate = new Date(Date.parse(str.replace('-','/').replace('-','/')));
+    		var time:Number = value;
+            _endDate = new Date(time);
         } 
 	}
 }

@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DraggablePanel 
+	xmlns="org.findikproject.components.*" 
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:flexlib="http://code.google.com/p/flexlib/"
+	xmlns:schedular="org.findikproject.components.schedular.*"
+	title="{resourceManager.getString('resources', 'btk.timeline')}" 
+	creationComplete="init()" 
+	minWidth="600" minHeight="400" xmlns:timeline="org.findikproject.components.timeline.*">
+	<mx:Metadata>
+		[ResourceBundle("resources")]
+	</mx:Metadata>
+	<mx:Script>
+		<![CDATA[
+			import org.findikproject.beans.VOBTKGeneralInfo;
+			import mx.formatters.DateFormatter;
+			import org.findikproject.beans.VOTimelineItem;
+			import flexlib.scheduling.scheduleClasses.BackgroundItem;
+			import mx.collections.IList;
+			import flexlib.scheduling.scheduleClasses.LayoutScrollEvent; 
+		
+			import flexlib.scheduling.util.DateUtil;
+			import flexlib.scheduling.samples.ScheduleData;
+			import flexlib.scheduling.scheduleClasses.renderers.ColoredSolidScheduleEntryRenderer;
+			import flexlib.scheduling.scheduleClasses.ColoredScheduleEntry;
+			import mx.controls.Alert;
+			import org.findikproject.beans.VOTimeline;
+			import org.findikproject.beans.VOTimeTable;
+			import mx.events.ScrollEventDirection;
+			import mx.events.ScrollEvent;
+			import mx.collections.ArrayCollection;
+			import org.findikproject.components.RemoteDataObject;
+			import org.findikproject.util.RemoteDataObjectEvent;
+			
+			[Bindable]
+			private var remoteDataObject:RemoteDataObject;
+			[Bindable]
+			private var remoteDataObjectGI:RemoteDataObject;
+			[Bindable]
+	        private var startDate : Date;
+	        [Bindable]
+	        private var endDate : Date;
+	        [Bindable]
+	        private var zoom : Number;
+        	[Bindable]         
+         	private var dataProvider : ArrayCollection;
+         	[Bindable]
+         	private var scheduleViewerWidth : Number = 750;
+         	[Bindable]
+         	private var scheduleViewerHeight : Number = 300;
+         	[Bindable]
+         	private var rowDataProvider : IList;
+         	[Bindable]
+         	private var dateFormatter:DateFormatter;
+         	[Bindable]
+         	private var generalInfo:VOBTKGeneralInfo;
+         	
+         	private static var aDay:Number = 24 * 60 * 60 * 1000;
+         	
+			private function init():void {
+				remoteDataObject = new RemoteDataObject("BTKTimelineService",null,null);
+				remoteDataObject.addEventListener(RemoteDataObjectEvent.DATA_RECEIVED, dataReceived);
+				remoteDataObject.init();
+				remoteDataObjectGI = new RemoteDataObject("BTKGeneralInfoService",null,null);
+				remoteDataObjectGI.addEventListener(RemoteDataObjectEvent.DATA_RECEIVED, generalInfoReceived);
+				remoteDataObjectGI.init();
+				zoom = 100;
+				
+				dateFormatter = new DateFormatter();
+				dateFormatter.formatString = "DD MMM. YYYY EEEE, JJ:NN";
+				
+	            initBackgroundColors();
+			}
+			
+			private function generalInfoReceived(event:RemoteDataObjectEvent):void {
+				generalInfo = (remoteDataObjectGI.remoteData as Array)[0] as VOBTKGeneralInfo;
+			}
+			
+			private function dataReceived(event:RemoteDataObjectEvent):void {
+				var timeData:ArrayCollection = new ArrayCollection(remoteDataObject.remoteData as Array);
+				var timespanItems:ArrayCollection = new ArrayCollection();
+				var result : Array = new Array();
+				
+				startDate = new Date((timeData.getItemAt(0) as VOTimeline).startDate.time + (new Date().timezoneOffset * 60 * 1000) - ((timeData.getItemAt(0) as VOTimeline).startDate.time % aDay));
+				endDate = new Date(startDate.time + aDay);
+				
+				var sDate:Date = startDate;
+				var eDate:Date = new Date((timeData.getItemAt(timeData.length - 1) as VOTimeline).endDate.time + (new Date().timezoneOffset * 60 * 1000));
+				var dayCount:int = (eDate.valueOf() - sDate.valueOf()) / aDay;
+				if((eDate.valueOf() - sDate.valueOf()) % aDay > 0)
+					dayCount++;
+					
+				var formatter:DateFormatter = new DateFormatter();
+				formatter.formatString = "DD.MM.YYYY";
+				rowDataProvider = new ArrayCollection(); 
+				for(var i:int = 0; i < dayCount ; i++) {
+					rowDataProvider.addItem( { label: formatter.format(sDate) } )
+					sDate = new Date(sDate.time + aDay);					
+				}
+
+				for each(var obj:VOTimeline in timeData) {
+					if(obj.status == 2) {
+						timespanItems.addAll(createTimespanArray(obj.startDate, obj.endDate, 
+							resourceManager.getString('resources', 'btk.timeline.on'), 0xCCCCCC)); 
+					}
+					else if(obj.status == 1) {
+						timespanItems.addAll(createTimespanArray(obj.startDate, obj.endDate, 
+							resourceManager.getString('resources', 'btk.timeline.on'), 0x00FF00)); 
+					}
+					else if(obj.status == 0) {
+						timespanItems.addAll(createTimespanArray(obj.startDate, obj.endDate, 
+							resourceManager.getString('resources', 'btk.timeline.off'), 0xFF0000)); 
+					}			
+				}
+				timespanItems = groupTimespanIntervalsDayByDay(timespanItems);
+				
+				for each(var arrCol:ArrayCollection in timespanItems) {
+					var row : IList = new ArrayCollection();
+					for each(var entry:ColoredScheduleEntry in arrCol) {
+						row.addItem(entry);
+					}
+					result.push(row);
+				}
+				dataProvider = new ArrayCollection(result);
+			}
+			
+			private function createTimespanArray(sDate:Date, eDate:Date, label:String, bgColor:uint):ArrayCollection {
+				var timespanArray:ArrayCollection = new ArrayCollection();
+				
+				var sDateMillis:Number = sDate.time;
+				var eDateMillis:Number = eDate.time;
+				var tempDateMillis:Number = sDateMillis;
+				
+				
+				while(tempDateMillis < eDateMillis) {
+					var dailyIntervalMillis:Number = aDay - (tempDateMillis % aDay);
+					var entry : ColoredScheduleEntry = new ColoredScheduleEntry();
+					entry.startDate = new Date(tempDateMillis + new Date().timezoneOffset * 60 * 1000);
+					entry.label = label;
+					entry.backgroundColor = bgColor;
+					if((tempDateMillis + dailyIntervalMillis) > eDateMillis) {
+						entry.endDate = new Date(eDateMillis  + new Date().timezoneOffset * 60 * 1000);
+					} else {
+						entry.endDate = new Date(tempDateMillis + dailyIntervalMillis + (new Date().timezoneOffset * 60 * 1000));
+					}
+					tempDateMillis += dailyIntervalMillis;
+					timespanArray.addItem(entry); 
+				}
+				return timespanArray;
+			}
+			
+			private function groupTimespanIntervalsDayByDay(timespanItems:ArrayCollection):ArrayCollection {
+				var daySpanArray:ArrayCollection = new ArrayCollection();
+				var newDay:Boolean = false;
+				var dayArr:ArrayCollection = new ArrayCollection();
+				var firstDayComplete:Boolean = false;
+				for(var i:int = 0 ; i < timespanItems.length ; i++) {
+					var entry:ColoredScheduleEntry = timespanItems.getItemAt(i) as ColoredScheduleEntry;
+					if(newDay) {
+						newDay = false;
+						firstDayComplete = true;
+						if(dayArr.length > 0)
+							daySpanArray.addItem(dayArr);
+						dayArr = new ArrayCollection();
+					}
+					entry.startDate = new Date(entry.startDate.time - (daySpanArray.length * aDay));
+					entry.endDate = new Date(entry.endDate.time - (daySpanArray.length * aDay));
+					
+					if(((entry.endDate.time - new Date().timezoneOffset * 60 * 1000) % aDay) == 0) {
+						newDay = true;
+					}
+					
+					entry.endDate = new Date(entry.endDate.time - 1);
+					
+					dayArr.addItem(entry);
+					
+					if(i + 1 == timespanItems.length) {						
+						if(dayArr.length > 0)
+							daySpanArray.addItem(dayArr);
+						dayArr = new ArrayCollection();
+					}
+				}
+				
+				return daySpanArray;	
+			}
+         
+	         private function onZoom( value : Number ) : void
+	         {
+	            zoom = value;
+	         }
+			
+			private function onScrollTimeline( position : Number ) : void
+	        {
+	           scheduleViewer.xPosition = position;
+	        }
+	         
+	        private function onScrollScheduleViewer( event : ScrollEvent ) : void
+	        {
+	           if( event.direction == ScrollEventDirection.HORIZONTAL )
+	           {
+	              timeline.xPosition = event.position;
+	           }
+	        }
+	        private function gotoNow() : void
+	        {
+	           var time : Date = new Date();
+	           scheduleViewer.moveToTime( time.getTime() - startDate.getTime() );
+	        }
+	        
+	        private function gotoSelectedEntry() : void
+	        {
+	           if( scheduleViewer.selectedItem != null )
+	           {
+	              scheduleViewer.moveToEntry( scheduleViewer.selectedItem );
+	           }
+	           else
+	           {
+	              warnAboutNoSelection();
+	           }
+	        }
+	        
+	        private function warnAboutNoSelection() : void
+	        {
+	           Alert.show( "Please select an entry." );
+	        }
+	        
+	        private function scrollList( event : LayoutScrollEvent ) : void
+	        {
+	            if( event.direction == ScrollEventDirection.VERTICAL )
+	            {
+	               rowsList.verticalScrollPosition = event.position;      
+	            }
+	        }  
+	        
+	        private function initBackgroundColors() : void
+	        {
+	            var result : ArrayCollection = new ArrayCollection();
+	            
+	            var duration : Number = endDate.getTime() - startDate.getTime();
+	            var days : Number = duration / DateUtil.DAY_IN_MILLISECONDS;
+	            
+	            for( var i : int; i < days; i++ )
+	            {
+	               var currentDate : Number = DateUtil.DAY_IN_MILLISECONDS * i;
+	               var backgroundItem : BackgroundItem;
+	               backgroundItem = createBackgroundItem( "office closed", 0xD5D4D0, 
+	                                                   currentDate, 0, 0, 24, 0 );         
+	               result.addItem( backgroundItem );
+	               
+	               backgroundItem = createBackgroundItem( "generell office hours", 0xFFFFFF, 
+	                                                      currentDate, 8, 0, 18, 0 );
+	               result.addItem( backgroundItem );
+	                     
+	            }            
+	            scheduleViewer.backgroundItems = result;
+	        }
+	        
+	        private function createBackgroundItem( description : String, 
+                                                color : Number, currentDate : Number,  
+                                                startHours : Number, startMinutes : Number, 
+                                                endHours : Number, endMinutes : Number ) : BackgroundItem
+	        {
+	            var backgroundItem : BackgroundItem = new BackgroundItem();
+	            backgroundItem.description = description;
+	            backgroundItem.color = color;
+	            backgroundItem.startDate = new Date( currentDate + createTime( startHours, startMinutes ) );
+	            backgroundItem.endDate = new Date( currentDate + createTime( endHours, endMinutes ) );
+	            return backgroundItem;   
+	        }
+         	
+         	private function createTime( hours : Number, minutes : Number ) : Number
+	        {
+	            var result : Number = (( hours * 60 ) + minutes ) * 60 * 1000;
+	            return result;
+	        }
+	        
+		]]>
+	</mx:Script>
+	<mx:Form>
+		<mx:FormItem label="{resourceManager.getString('resources', 'btk.timeline.date')}">
+			<mx:Label text="{dateFormatter.format(new Date())}"/>
+		</mx:FormItem>
+		<mx:FormItem label="{resourceManager.getString('resources', 'btk.timeline.lastdbupdate')}">
+			<mx:Label text="{generalInfo.updateName}"/>
+		</mx:FormItem>
+		<mx:FormItem label="{resourceManager.getString('resources', 'btk.timeline.lastupdatedate')}">
+			<mx:Label text="{dateFormatter.format(generalInfo.updateDate)}"/>
+		</mx:FormItem>
+		<mx:FormItem label="{resourceManager.getString('resources', 'btk.timeline.clientcount')}">
+			<mx:Label text="{generalInfo.currentClient.toString()}"/>
+		</mx:FormItem>
+	</mx:Form>
+	<mx:VBox>
+		
+		<mx:HBox horizontalGap="0">
+		   <mx:VBox verticalGap="0">
+		      <mx:VBox height="{ timeline.height }" verticalGap="0">
+	         		<mx:Label text=""/>
+	          </mx:VBox>
+		      <mx:List 
+		         id="rowsList" width="80" height="{ scheduleViewerHeight }" 
+		         dataProvider="{ rowDataProvider }" 
+		         rowHeight="{ scheduleViewer.rowHeight }" 
+		         verticalScrollPolicy="off" verticalAlign="middle"
+		         borderThickness="0"/>
+		   </mx:VBox>
+		      
+		   <mx:VBox verticalGap="0">
+		   <!-- itemRenderer="org.findikproject.components.schedular.SimpleTimelineEntryRenderer"  -->
+		      <flexlib:Timeline
+		         id="timeline" 
+		         width="{ scheduleViewerWidth }" borderStyle="none"  
+		         startDate="{ startDate }" endDate="{ endDate }" 
+		         zoom="{ zoom }" 
+		         scroll="onScrollTimeline( event.position );" 
+		         minimumTimeRangeWidth="30"
+		         />
+		      <flexlib:ScheduleViewer 
+		         id="scheduleViewer" height="{scheduleViewerHeight}" width="{ scheduleViewerWidth }"
+		         borderStyle="none" dataProvider="{ dataProvider }" rowHeight="30" 
+		         startDate="{ startDate }" endDate="{ endDate }" 
+		         zoom="{ zoom }" 
+		         horizontalScrollPolicy="off" pixelScrollEnabled="false" 
+		         entryRenderer="org.findikproject.components.schedular.ColoredGradientScheduleEventRenderer"
+		         entryLayout="flexlib.scheduling.scheduleClasses.layout.SimpleLayout" 
+		         horizontalLinesViewer="flexlib.scheduling.samples.AlternatingHorizontalLinesViewer" 
+		         verticalLinesViewer="flexlib.scheduling.samples.SolidVerticalLinesViewer"  
+		         pixelScroll="onScrollScheduleViewer( event );" itemScroll="scrollList( event )" 
+		         minimumTimeRangeWidth="30"
+		         />
+		      <mx:HBox width="100%" paddingTop="6">      
+		         <mx:Label text="{resourceManager.getString('resources', 'btk.timeline.zoom')}"/>
+		         <mx:HSlider 
+		            id="zoomSlider" 
+		            minimum="100" maximum="200" value="{ zoom }" 
+		            snapInterval="1" liveDragging="true" 
+		            change="onZoom( zoomSlider.value );" />
+		      </mx:HBox>
+		   </mx:VBox>
+	  </mx:HBox>		
+	</mx:VBox>
+</DraggablePanel>

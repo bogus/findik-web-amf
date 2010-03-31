@@ -12,7 +12,7 @@
 	<mx:State name="loggedin">
 		<mx:RemoveChild target="{loginCanvas}"/>
 		<mx:AddChild position="lastChild">
-			<views:StartPage />
+			<views:StartPage /> 
 		</mx:AddChild>
 	</mx:State>
 </mx:states>
@@ -54,20 +54,19 @@
 <mx:Panel x="330" y="95" width="250" height="136" layout="absolute"
 	titleIcon="@Embed('/assets/images/icons/16x16/lock.png')" 
 	title="{resourceManager.getString('resources','login.title')}" 
-	id="login_panel"> 
+	id="login_panel" defaultButton="{loginButton}"> 
 		<mx:Text x="10" y="10" text="{resourceManager.getString('resources','login.username')}"/>
 		<mx:Text x="10" y="36" text="{resourceManager.getString('resources','login.password')}"/>
 		<mx:TextInput x="80" y="8" width="140" id="username"/>
 		<mx:TextInput x="80" y="34" width="140" id="password" displayAsPassword="true"/>
 		<mx:Button x="113" y="64" label="{resourceManager.getString('resources','login.submit')}"
 			icon="@Embed('/assets/images/icons/16x16/ok.png')"  
-			click="login();"/>
+			click="login();" id="loginButton"/>
 	</mx:Panel>
 	<mx:Text text="a handful, everyday.." color="#D27A08" fontSize="17" fontFamily="Courier New" fontWeight="bold" right="10" bottom="10"/>
 </mx:Canvas>
 <mx:StringValidator source="{username}" property="text" maxLength="32" required="true" id="usernameValidator" />
 <mx:StringValidator source="{password}" minLength="6" maxLength="32" property="text"  required="true" id="passwordValidator" />
-
 -->
 <views:StartPage />
 

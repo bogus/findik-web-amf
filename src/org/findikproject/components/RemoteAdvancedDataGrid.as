@@ -46,7 +46,7 @@ package org.findikproject.components
 			
 			this.addEventListener(DataGridEvent.ITEM_EDIT_END,updateGrid);	
 			
-			this.allowMultipleSelection = true;
+			this.allowMultipleSelection = false;
 			
 			this.getGridData();
 		}
@@ -88,19 +88,8 @@ package org.findikproject.components
 	    	remoteObject.getData();
 	    }
 	    
-	    public function remove(arr:Array):void {
-	    	var i:int = 0;
-	    	var j:int = 0;
-	    	for(;i < arr.length ;i++) {
-	    		remoteObject.deleteData(arr[i]);
-	    		var cursor:IViewCursor = dataProvider.createCursor();
-	    		for(j = 0; !cursor.afterLast; j++) {
-	    			if(cursor.current.id == arr[i].id) {
-	    				dataProvider.removeItemAt(j);
-	    			}
-	    			cursor.moveNext();
-	    		}
-	    	}
+	    public function remove(obj:Object):void {
+	    	remoteObject.deleteData(obj);
 			//remoteObject.getData();
 	    }
 	    

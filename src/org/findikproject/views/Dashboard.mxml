@@ -2,51 +2,11 @@
 <mx:Canvas xmlns="org.findikproject.components.*" xmlns:mx="http://www.adobe.com/2006/mxml"
 	xmlns:validators="org.findikproject.validators.*"
 	width="100%" height="100%"
-	xmlns:flexlib="http://code.google.com/p/flexlib/">
+	xmlns:screens="org.findikproject.screens.*">
 	<mx:Metadata>
 		[ResourceBundle("resources")]
 	</mx:Metadata>
-	
-<mx:Script>
-	<![CDATA[
-		
-	private function setRowColor(item:Object, rowIndex:int, dataIndex:int, color:uint):uint
-	{
-	     if(item.result == "f")
-	       return 0xFF0000;
-	     else
-	       return color;
-	}
-	
-	private function setLogTimer():void {
-		var timer:Timer = new Timer(5000);
-		timer.addEventListener(TimerEvent.TIMER, timerHandler);
-		timer.start();
-	}
-	
-	private function timerHandler(e:TimerEvent):void{
-        logGrid.getGridData();
-    }
-	]]>
-</mx:Script>
-	<DraggablePanel	layout="absolute"
-		title="{resourceManager.getString('resources', 'dashboard.livelog.title')}"
-		titleIcon="@Embed('/assets/images/icons/16x16/internet.png')" >
-     
-		<RowColorRemoteDataGrid width="730" height="500" id="logGrid" alpha="0.8"
-				x="0" y="0" remoteDestination="zend" remoteSource="LiveLogService"
-				creationComplete="{logGrid.init();setLogTimer();}" horizontalScrollPolicy="on"
-				rowColorFunction="setRowColor">				
-			<columns> 
-				<mx:DataGridColumn dataField="date" width="70" headerText="{resourceManager.getString('resources', 'dashboard.livelog.date')}"/>
-				<mx:DataGridColumn dataField="time" width="80" headerText="{resourceManager.getString('resources', 'dashboard.livelog.time')}"/>
-				<mx:DataGridColumn dataField="localAddr" width="100" headerText="{resourceManager.getString('resources', 'dashboard.livelog.localAddr')}"/>
-				<mx:DataGridColumn dataField="domain" width="120" headerText="{resourceManager.getString('resources', 'dashboard.livelog.domain')}"/>
-				<mx:DataGridColumn dataField="url" itemRenderer="org.findikproject.components.URLRedirector" width="200" headerText="{resourceManager.getString('resources', 'dashboard.livelog.url')}"/>
-				<mx:DataGridColumn dataField="reqSize" width="70" headerText="{resourceManager.getString('resources', 'dashboard.livelog.reqSize')}"/>
-				<mx:DataGridColumn dataField="respSize" headerText="{resourceManager.getString('resources', 'dashboard.livelog.respSize')}"/>
-			</columns>
-		</RowColorRemoteDataGrid>
-	</DraggablePanel>
+	<screens:SystemStatus id="systemStatus" x="20" y="50" />
+	<screens:LiveLogViewer id="liveLog" x="{systemStatus.width + 40}" y="50"/>
 	
 </mx:Canvas>

@@ -60,7 +60,7 @@
 	}
 ]]>
 </mx:Script>
-	<mx:Form id="newIPVal" width="239" height="214" x="341">
+	<mx:Form id="newIPVal" width="239" height="214" x="341" defaultButton="{addIPButton}">
 		<mx:FormItem width="202">
 			<mx:Text text="{resourceManager.getString('resources', 'ipman.name')}"/>
 			<mx:TextInput id="ipname" x="109" y="321"/>		
@@ -74,7 +74,7 @@
 			<mx:TextInput id="localMask" x="109" y="321"/>		
 		</mx:FormItem>
 		<mx:FormItem>
-			<mx:Button label="{resourceManager.getString('resources', 'ipman.add')}" 
+			<mx:Button label="{resourceManager.getString('resources', 'ipman.add')}" id="addIPButton"
 				click="addIPVal();"	x="287" y="321" icon="@Embed('/assets/images/icons/16x16/edit_add.png')"></mx:Button>		
 		</mx:FormItem>
 	</mx:Form>

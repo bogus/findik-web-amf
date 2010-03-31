@@ -68,8 +68,8 @@ package org.findikproject.components
 	   		if(statusImage != null && statusLabel != null) {
 		   		statusImage.load('assets/images/icons/16x16/ok.png');
 		   		statusLabel.text = ResourceManager.getInstance().getString('resources','delete.successful');
-		   	}
-   		}
+		   	} 
+   		} 
    		private function getDataListener(event:ResultEvent):void {     
 			remoteData = event.result as Array;
 			var eventObj:RemoteDataObjectEvent = new RemoteDataObjectEvent(RemoteDataObjectEvent.DATA_RECEIVED);

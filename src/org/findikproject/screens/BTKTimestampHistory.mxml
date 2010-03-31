@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DraggablePanel xmlns="org.findikproject.components.*" xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:validators="org.findikproject.validators.*" layout="absolute"
+	title="{resourceManager.getString('resources', 'btk.tshistory.title')}">
+<mx:Metadata>
+	[ResourceBundle("resources")]
+</mx:Metadata> 
+
+	<RemoteDoubleClickDataGrid rowCount="15" id="dataGrid" alpha="0.5"
+				dragEnabled="false" editable="false"
+				remoteDestination="zend" remoteSource="BTKTimestampHistoryService"
+				statusLabel="{resultLabel}" statusImage="{resultImage}"
+				creationComplete="dataGrid.init();"
+				dropEnabled="false" x="0" y="0">				
+			<columns>
+				<mx:DataGridColumn dataField="id" editable="false" width="0"/>
+				<mx:DataGridColumn dataField="startDate"  editable="false" headerText="{resourceManager.getString('resources', 'btk.tshistory.startdate')}"/>
+				<mx:DataGridColumn dataField="endDate" editable="false" headerText="{resourceManager.getString('resources', 'btk.tshistory.enddate')}"/>
+				<mx:DataGridColumn dataField="logSize" editable="false" headerText="{resourceManager.getString('resources', 'btk.tshistory.logsize')}"/>
+				<mx:DataGridColumn dataField="status" editable="false" headerText="{resourceManager.getString('resources', 'btk.tshistory.status')}"/>
+			</columns>
+	</RemoteDoubleClickDataGrid>
+	<mx:ControlBar horizontalAlign="right">
+		<mx:Image width="16" height="16" id="resultImage"/>
+		<mx:Label id="resultLabel"/>
+	</mx:ControlBar>
+</DraggablePanel>

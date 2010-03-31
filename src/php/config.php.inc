@@ -34,7 +34,7 @@ $GLOBALS['DB_PASSWORD'] = "";
 $GLOBALS['DB_DBNAME'] = "findik";
 // Log file name
 //$GLOBALS['LOG_FILE'] = "/var/log/findik/filter.log";
-$GLOBALS['LOG_FILE'] = "c:/filter.log";
+$GLOBALS['LOG_FILE'] = "g:/filter.log";
 // Log file name
 $GLOBALS['LIVE_LOG_ROW_COUNT'] = 100;
 

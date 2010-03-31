@@ -43,7 +43,7 @@ class Zend_Amf_Value_MessageBody
      * is to be remotley invoked.
      * @var string
      */
-    protected $_targetUri = "";
+    protected $_targetURI = "";
 
     /**
      * Universal Resource Identifier that uniquely targets the originator's
@@ -61,7 +61,7 @@ class Zend_Amf_Value_MessageBody
      *
      * @var string
      */
-    protected $_responseUri = "";
+    protected $_responseURI = "";
 
     /**
      * Contains the actual data associated with the operation. It contains
@@ -88,8 +88,8 @@ class Zend_Amf_Value_MessageBody
      */
     public function __construct($targetUri, $responseUri, $data)
     {
-        $this->setTargetUri($targetUri);
-        $this->setResponseUri($responseUri);
+        $this->setTargetURI($targetUri);
+        $this->setResponseURI($responseUri);
         $this->setData($data);
     }
 
@@ -98,9 +98,9 @@ class Zend_Amf_Value_MessageBody
      * 
      * @return string
      */
-    public function getTargetUri()
+    public function getTargetURI()
     {
-        return $this->_targetUri;
+        return $this->_targetURI;
     }
 
     /**
@@ -109,12 +109,12 @@ class Zend_Amf_Value_MessageBody
      * @param  string $targetUri 
      * @return Zend_Amf_Value_MessageBody
      */
-    public function setTargetUri($targetUri)
+    public function setTargetURI($targetUri)
     {
         if (null === $targetUri) {
             $targetUri = '';
         }
-        $this->_targetUri = (string) $targetUri;
+        $this->_targetURI = (string) $targetUri;
         return $this;
     }
 
@@ -123,9 +123,9 @@ class Zend_Amf_Value_MessageBody
      * 
      * @return string
      */
-    public function getResponseUri()
+    public function getResponseURI()
     {
-        return $this->_responseUri;
+        return $this->_responseURI;
     }
 
     /**
@@ -134,12 +134,12 @@ class Zend_Amf_Value_MessageBody
      * @param  string $responseUri 
      * @return Zend_Amf_Value_MessageBody
      */
-    public function setResponseUri($responseUri)
+    public function setResponseURI($responseUri)
     {
         if (null === $responseUri) {
             $responseUri = '';
         }
-        $this->_responseUri = $responseUri;
+        $this->_responseURI = $responseUri;
         return $this;
     }
 
@@ -174,9 +174,9 @@ class Zend_Amf_Value_MessageBody
     public function setReplyMethod($methodName)
     {
         if (!preg_match('#^[/?]#', $methodName)) {
-            $this->_targetUri = rtrim($this->_targetUri, '/') . '/';
+            $this->_targetURI = rtrim($this->_targetURI, '/') . '/';
         }
-        $this->_targetUri = $this->_targetUri . $methodName;
+        $this->_targetURI = $this->_targetURI . $methodName;
         return $this;
     }
 }

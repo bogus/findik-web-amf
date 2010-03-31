@@ -1,5 +1,7 @@
 package org.findikproject.components
 {
+	import flash.events.KeyboardEvent;
+	
 	import mx.collections.ArrayCollection;
 	import mx.collections.IViewCursor;
 	import mx.controls.Alert;
@@ -21,7 +23,7 @@ package org.findikproject.components
 		[Bindable]
 		public var remoteDestination:String;
 		[Bindable]
-		public var ruleId:int;
+		private var _ruleId:int;
 		[Bindable]
 		public var filterGroupName:String;
 		[Bindable]
@@ -35,12 +37,6 @@ package org.findikproject.components
 		}
 		
 		public function init():void {
-			
-		}
-		
-		override public function set data(value:Object):void {
-			_data = value;
-			
 			remoteObject = new RemoteObject(remoteDestination);
 			remoteObject.source = remoteSource;
 			remoteObject.showBusyCursor = true;
@@ -49,15 +45,22 @@ package org.findikproject.components
 			remoteObject.insertData.addEventListener(ResultEvent.RESULT,insertDataListener);
 			remoteObject.deleteData.addEventListener(ResultEvent.RESULT,deleteDataListener);
 			
-			ruleId = _data.id;
-			
 			this.editable = false;
 			this.allowMultipleSelection = true;
 			
 			this.addEventListener(DragEvent.DRAG_DROP, insertDragDropListener);
 			this.addEventListener(DragEvent.DRAG_ENTER, insertDragEnterListener);
-			
+			this.addEventListener(KeyboardEvent.KEY_UP, keyHandler);
 			this.getGridData();
+		}
+		
+		public function set ruleId(value:int):void {
+			_ruleId = value;
+			this.getGridData();
+		}
+		
+		public function get ruleId():int {
+			return _ruleId;
 		}
 		
 		override public function get listRendererArray():Array {
@@ -97,7 +100,7 @@ package org.findikproject.components
 		    			var val:VOACLFilterParam = new VOACLFilterParam();
 		    			val.id = 0;
 		    			val.filterKey = filterGroupName;
-		    			val.ruleId = ruleId;
+		    			val.ruleId = _ruleId;
 		    			val.param = itemsArray[i].id;
 		    			val.name = itemsArray[i].name;
 		    			arrList.addItem(val);
@@ -112,13 +115,13 @@ package org.findikproject.components
 			var obj:IUIComponent = IUIComponent(event.currentTarget);
 			if((event.dragInitiator as RemoteDoubleClickDataGrid).id == dragInitiatorId)
 	    		DragManager.acceptDragDrop(obj);
-		}
+		} 
 		
 		public function remove(arr:Array):void {
 	    	var i:int = 0;
 	    	var j:int = 0;
 	    	for(;i < arr.length ;i++) {
-	    		remoteObject.deleteData(arr[i],ruleId);
+	    		remoteObject.deleteData(arr[i],_ruleId);
 	    		var cursor:IViewCursor = dataProvider.createCursor();
 	    		for(j = 0; !cursor.afterLast; j++) {
 	    			if(cursor.current.id == arr[i].id) {
@@ -134,12 +137,21 @@ package org.findikproject.components
 	    	for(;i < arr.length ;i++) {
 	    		remoteObject.insertData(arr[i]);
 	    	}
-	    	remoteObject.getData(filterGroupName,ruleId);	    		
+	    	remoteObject.getData(filterGroupName,_ruleId);	    		
 	    }
 	    
 	    public function getGridData():void {
-	    	remoteObject.getData(filterGroupName,ruleId);
+	    	remoteObject.getData(filterGroupName,_ruleId);
 	    }
 		
+		private function keyHandler(event:KeyboardEvent):void {
+			Alert.show(event.keyCode.toString());
+            if(event.keyCode == 46) {
+            	this.remove(this.selectedItems as Array);
+            	for(var i:int = 0; i < selectedIndices.length; i++) {
+            		(this.dataProvider as ArrayCollection).removeItemAt(selectedIndices[i]);
+            	}
+            }
+        }
 	}
 }

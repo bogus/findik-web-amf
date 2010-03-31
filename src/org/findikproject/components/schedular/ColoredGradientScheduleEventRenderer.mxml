@@ -1,0 +1,32 @@
+<AbstractGradientScheduleEventRenderer
+        xmlns:mx="http://www.adobe.com/2006/mxml" 
+        xmlns="org.findikproject.components.schedular.*">
+        
+        <mx:Script>
+                <![CDATA[
+                        import flexlib.scheduling.scheduleClasses.IScheduleEntry;
+                        import flexlib.scheduling.scheduleClasses.SimpleScheduleEntry;
+                        import flexlib.scheduling.scheduleClasses.ColoredScheduleEntry;
+                        
+                        import mx.utils.ColorUtil;
+                        
+                        override public function set data ( value : Object ) : void
+                        {
+                                super.data = value;
+                                
+                                entry = value as IScheduleEntry;
+                                var content : ColoredScheduleEntry = ColoredScheduleEntry( entry );
+
+                                var newColor : uint = ColorUtil.adjustBrightness2( content.backgroundColor, 25 );
+                                setStyle( "fillColors", [ newColor, content.backgroundColor ] );
+                                
+                                setTextContent( SimpleScheduleEntry( content ) );
+                        }
+                ]]> 
+        </mx:Script>
+
+        <mx:HBox>
+        	<mx:Label id="contentLabel" />
+        	<mx:Text id="contentText" />
+        </mx:HBox>
+</AbstractGradientScheduleEventRenderer>
