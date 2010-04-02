@@ -1,4 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (C) 2009 Burak Oguz (barfan) <findikmail@gmail.com>
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+-->
 <mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%"
 	xmlns:screens="org.findikproject.screens.*" 
 	xmlns:components="org.findikproject.components.*"
@@ -116,9 +134,9 @@
 				<views:ACLManagementPanel id="aclGenerator"/>
 			</mx:AddChild>
 		</mx:State>
-		<mx:State name="userManagement">			
+		<mx:State name="settings">			
 			<mx:AddChild relativeTo="{container}">
-				<views:UserManagementDraggablePanel id="userManager"/>
+				<views:Settings id="settings"/>
 			</mx:AddChild>
 		</mx:State>
 		<mx:State name="exportImportManagement">			
@@ -141,10 +159,10 @@
 		<menuitem label="{resourceManager.getString('resources', 'menu.system')}">
 			<menuitem label="{resourceManager.getString('resources', 'menu.dashboard')}" 
             	actionState="dashboard"/>
-            <menuitem label="{resourceManager.getString('resources', 'backup.title')}" 
-            	actionState="exportImportManagement"/>
-            <menuitem label="{resourceManager.getString('resources', 'menu.user')}" 
-            	actionState="userManagement"/>
+            <!-- <menuitem label="{resourceManager.getString('resources', 'backup.title')}" 
+            	actionState="exportImportManagement"/> -->
+            <menuitem label="{resourceManager.getString('resources', 'menu.settings')}" 
+            	actionState="settings"/>
             <menuitem label="{resourceManager.getString('resources', 'btk.title')}" 
             	actionState="btkReqs"/>
         </menuitem>
@@ -174,8 +192,8 @@
 		<menuitem label="{resourceManager.getString('resources', 'menu.system')}">
 			<menuitem label="{resourceManager.getString('resources', 'menu.dashboard')}" 
             	actionState="dashboard"/>
-            <menuitem label="{resourceManager.getString('resources', 'menu.user')}" 
-            	actionState="userManagement"/>
+            <menuitem label="{resourceManager.getString('resources', 'menu.settings')}" 
+            	actionState="settings"/>
             <menuitem label="{resourceManager.getString('resources', 'btk.title')}" 
             	actionState="btkReqs"/>
         </menuitem>

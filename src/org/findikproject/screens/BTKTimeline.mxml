@@ -1,4 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (C) 2009 Burak Oguz (barfan) <findikmail@gmail.com>
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+-->
 <DraggablePanel 
 	xmlns="org.findikproject.components.*" 
 	xmlns:mx="http://www.adobe.com/2006/mxml"
@@ -101,15 +119,15 @@
 				for each(var obj:VOTimeline in timeData) {
 					if(obj.status == 2) {
 						timespanItems.addAll(createTimespanArray(obj.startDate, obj.endDate, 
-							resourceManager.getString('resources', 'btk.timeline.on'), 0xCCCCCC)); 
+							resourceManager.getString('resources', 'btk.timeline.serviceon'), 0x00FF00)); 
 					}
 					else if(obj.status == 1) {
 						timespanItems.addAll(createTimespanArray(obj.startDate, obj.endDate, 
-							resourceManager.getString('resources', 'btk.timeline.on'), 0x00FF00)); 
+							resourceManager.getString('resources', 'btk.timeline.serviceoff'), 0xFF0000)); 
 					}
 					else if(obj.status == 0) {
 						timespanItems.addAll(createTimespanArray(obj.startDate, obj.endDate, 
-							resourceManager.getString('resources', 'btk.timeline.off'), 0xFF0000)); 
+							resourceManager.getString('resources', 'btk.timeline.off'), 0xCCCCCC)); 
 					}			
 				}
 				timespanItems = groupTimespanIntervalsDayByDay(timespanItems);
@@ -276,20 +294,38 @@
 	        
 		]]>
 	</mx:Script>
-	<mx:Form>
-		<mx:FormItem label="{resourceManager.getString('resources', 'btk.timeline.date')}">
-			<mx:Label text="{dateFormatter.format(new Date())}"/>
-		</mx:FormItem>
-		<mx:FormItem label="{resourceManager.getString('resources', 'btk.timeline.lastdbupdate')}">
-			<mx:Label text="{generalInfo.updateName}"/>
-		</mx:FormItem>
-		<mx:FormItem label="{resourceManager.getString('resources', 'btk.timeline.lastupdatedate')}">
-			<mx:Label text="{dateFormatter.format(generalInfo.updateDate)}"/>
-		</mx:FormItem>
-		<mx:FormItem label="{resourceManager.getString('resources', 'btk.timeline.clientcount')}">
-			<mx:Label text="{generalInfo.currentClient.toString()}"/>
-		</mx:FormItem>
-	</mx:Form>
+
+	<mx:HBox width="100%">
+		<mx:Form>
+			<mx:FormItem label="{resourceManager.getString('resources', 'btk.timeline.date')}">
+				<mx:Label text="{dateFormatter.format(new Date())}"/>
+			</mx:FormItem>
+			<mx:FormItem label="{resourceManager.getString('resources', 'btk.timeline.lastdbupdate')}">
+				<mx:Label text="{generalInfo.updateName}"/>
+			</mx:FormItem>
+			<mx:FormItem label="{resourceManager.getString('resources', 'btk.timeline.lastupdatedate')}">
+				<mx:Label text="{dateFormatter.format(generalInfo.updateDate)}"/>
+			</mx:FormItem>
+			<mx:FormItem label="{resourceManager.getString('resources', 'btk.timeline.clientcount')}">
+				<mx:Label text="{generalInfo.currentClient.toString()}"/>
+			</mx:FormItem>
+		</mx:Form>
+		<mx:Spacer width="35%" />
+		<mx:VBox paddingTop="10">
+			<mx:HBox>
+				<mx:Canvas width="16" height="16" backgroundColor="#CCCCCC" />
+				<mx:Label text="{resourceManager.getString('resources', 'btk.timeline.off')}" />
+			</mx:HBox>
+			<mx:HBox>
+				<mx:Canvas width="16" height="16" backgroundColor="#FF0000" />
+				<mx:Label text="{resourceManager.getString('resources', 'btk.timeline.serviceoff')}" />
+			</mx:HBox>
+			<mx:HBox>
+				<mx:Canvas width="16" height="16" backgroundColor="#00FF00" />
+				<mx:Label text="{resourceManager.getString('resources', 'btk.timeline.serviceon')}" />
+			</mx:HBox>
+		</mx:VBox>
+	</mx:HBox>
 	<mx:VBox>
 		
 		<mx:HBox horizontalGap="0">

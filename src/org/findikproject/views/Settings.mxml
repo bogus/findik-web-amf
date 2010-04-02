@@ -1,6 +1,6 @@
-<?php
-/*
-  Copyright (C) 2009 Burak Oguz (barfan) <findikmail@gmail.com>
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (C) 2009 Burak Oguz (barfan) <findikmail@gmail.com>
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -15,10 +15,16 @@
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-*/
-class VOMimeTypeGroup {
-     public $id;
-     public $name;
-     public $crossCount;
-}
-?>
+
+-->
+<mx:Canvas xmlns="org.findikproject.components.*" xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:validators="org.findikproject.validators.*"
+	width="100%" height="100%"
+	xmlns:screens="org.findikproject.screens.*">
+	<mx:Metadata>
+		[ResourceBundle("resources")]
+	</mx:Metadata>
+	<screens:UserManagement x="20" y="20" id="userMan"/>
+	<screens:BTKRegistration x="{userMan.width + 40}" y="20" />
+	
+</mx:Canvas>

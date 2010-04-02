@@ -1,9 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (C) 2009 Burak Oguz (barfan) <findikmail@gmail.com>
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+-->
 <mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:screens="org.findikproject.screens.*"
 	width="100%" height="100%">
-	<screens:BTKDbUpdate x="{timeline.x + timeline.width + 20}" y="15" id="dbUpdate"/>
-	<screens:BTKTimestampRetriever x="{timeline.x + timeline.width + 20}" 
-		y="{dbUpdate.y + dbUpdate.height + 20}" id="tsRetriever"/>
+	<screens:BTKDbUpdate x="{20 + timeline.width + 20}" y="15" id="dbUpdate"/>
+	<screens:BTKTimestampRetriever x="{20 + timeline.width + 20}" 
+		y="{15 + dbUpdate.height + 20}" id="tsRetriever"/>
 	<screens:BTKTimeline id="timeline" x="20" y="15"/>
-	<screens:BTKRegistration x="20" y="{timeline.height + timeline.y + 20}" />
 </mx:Canvas>
