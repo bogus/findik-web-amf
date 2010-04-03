@@ -19,7 +19,8 @@ Copyright (C) 2009 Burak Oguz (barfan) <findikmail@gmail.com>
 -->
 <DraggablePanel xmlns="org.findikproject.components.*" xmlns:mx="http://www.adobe.com/2006/mxml"
 	xmlns:validators="org.findikproject.validators.*" layout="absolute"
-	title="{resourceManager.getString('resources', 'btk.dbupdate.title')}">
+	title="{resourceManager.getString('resources', 'btk.dbupdate.title')}"
+	creationComplete="setLogTimer()">
 <mx:Metadata>
 	[ResourceBundle("resources")]
 </mx:Metadata> 
@@ -32,6 +33,16 @@ Copyright (C) 2009 Burak Oguz (barfan) <findikmail@gmail.com>
             dateFormatter.formatString = "JJ:NN DD.MM.YYYY"            
             return dateFormatter.format(new Date(time));
         }
+        
+        private function setLogTimer():void {
+			var timer:Timer = new Timer(600000);
+			timer.addEventListener(TimerEvent.TIMER, timerHandler);
+			timer.start();
+		}
+		
+		private function timerHandler(e:TimerEvent):void{
+	        dataGrid.getGridData();
+	    }
 	]]>
 </mx:Script>
 	<RemoteDoubleClickDataGrid rowCount="8" id="dataGrid" alpha="0.5"

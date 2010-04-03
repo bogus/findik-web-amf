@@ -18,9 +18,7 @@
 */
 class VOBTKTimestampHistory {
      public $id;
-     public $startDate; 
-     public $endDate;
+     public $name; 
      public $logSize;
-     public $status;
 }
 ?>

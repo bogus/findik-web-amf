@@ -87,8 +87,20 @@ Copyright (C) 2009 Burak Oguz (barfan) <findikmail@gmail.com>
 				dateFormatter = new DateFormatter();
 				dateFormatter.formatString = "DD MMM. YYYY EEEE, JJ:NN";
 				
+				setLogTimer();
 	            initBackgroundColors();
 			}
+			
+			private function setLogTimer():void {
+				var timer:Timer = new Timer(60000);
+				timer.addEventListener(TimerEvent.TIMER, timerHandler);
+				timer.start();
+			}
+			
+			private function timerHandler(e:TimerEvent):void{
+				remoteDataObject.getObject();
+		        remoteDataObjectGI.getObject();
+		    }
 			
 			private function generalInfoReceived(event:RemoteDataObjectEvent):void {
 				generalInfo = (remoteDataObjectGI.remoteData as Array)[0] as VOBTKGeneralInfo;

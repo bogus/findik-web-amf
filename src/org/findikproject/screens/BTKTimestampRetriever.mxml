@@ -18,8 +18,21 @@ Copyright (C) 2009 Burak Oguz (barfan) <findikmail@gmail.com>
 
 -->
 <DraggablePanel xmlns="org.findikproject.components.*" xmlns:mx="http://www.adobe.com/2006/mxml" 
-	layout="absolute" title="{resourceManager.getString('resources', 'btk.tsret.title')}">
-
+	layout="absolute" title="{resourceManager.getString('resources', 'btk.tsret.title')}"
+	creationComplete="setLogTimer()">
+<mx:Script>
+	<![CDATA[
+		private function setLogTimer():void {
+			var timer:Timer = new Timer(600000);
+			timer.addEventListener(TimerEvent.TIMER, timerHandler);
+			timer.start();
+		}
+		
+		private function timerHandler(e:TimerEvent):void{
+	        dataGrid.getGridData();
+	    }
+	]]>
+</mx:Script>
 	<mx:VBox paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10">
 		
 		<mx:Form defaultButton="{getTSButton}">
@@ -39,11 +52,9 @@ Copyright (C) 2009 Burak Oguz (barfan) <findikmail@gmail.com>
 				creationComplete="dataGrid.init();"
 				dropEnabled="false" x="0" y="0">				
 			<columns>
-				<mx:DataGridColumn dataField="id" editable="false" width="0"/>
-				<mx:DataGridColumn dataField="startDate"  editable="false" headerText="{resourceManager.getString('resources', 'btk.tshistory.startdate')}"/>
-				<mx:DataGridColumn dataField="endDate" editable="false" headerText="{resourceManager.getString('resources', 'btk.tshistory.enddate')}"/>
-				<mx:DataGridColumn dataField="logSize" editable="false" headerText="{resourceManager.getString('resources', 'btk.tshistory.logsize')}"/>
-				<mx:DataGridColumn dataField="status" editable="false" headerText="{resourceManager.getString('resources', 'btk.tshistory.status')}"/>
+				<mx:DataGridColumn dataField="id" visible="false" editable="false" width="0"/>
+				<mx:DataGridColumn dataField="name" width="250" editable="false" headerText="{resourceManager.getString('resources', 'btk.tshistory.name')}"/>
+				<mx:DataGridColumn dataField="logSize" width="150" editable="false" headerText="{resourceManager.getString('resources', 'btk.tshistory.logsize')}"/>
 			</columns>
 		</RemoteDoubleClickDataGrid>
 	</mx:VBox>	

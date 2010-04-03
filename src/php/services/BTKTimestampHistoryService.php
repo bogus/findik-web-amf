@@ -34,10 +34,8 @@ class BTKTimestampHistoryService {
 	     while (!$rs->EOF) {
 		     $tmp = new VOBTKTimestampHistory();
 		     $tmp->id = $rs->fields["id"];
-		     $tmp->startDate = $rs->fields["start_date"]; 
-		     $tmp->endDate = $rs->fields["end_date"];
+		     $tmp->name = $rs->fields["name"]; 
 		     $tmp->logSize = $rs->fields["log_size"];
-		     $tmp->status = $rs->fields["status"]; 
 		     $ret[] = $tmp;
 		     $rs->MoveNext();
 	     }

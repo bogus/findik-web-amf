@@ -69,7 +69,10 @@ Copyright (C) 2009 Burak Oguz (barfan) <findikmail@gmail.com>
 					<mx:TextInput text="{userInfo.regUsername}" id="regUsername"/>
 				</mx:FormItem>
 				<mx:FormItem label="{resourceManager.getString('resources', 'btk.reg.password')}">
-					<mx:TextInput text="{userInfo.regPassword}" id="regPassword" displayAsPassword="true"/>
+					<mx:TextInput text="{userInfo.regPassword}" id="regPassword" displayAsPassword="{!showp1.selected}"/>
+				</mx:FormItem>
+				<mx:FormItem>
+					<mx:CheckBox id="showp1" label="{resourceManager.getString('resources', 'btk.reg.showpass')}"/>
 				</mx:FormItem>
 				<mx:FormItem>
 					<mx:Button label="{resourceManager.getString('resources', 'btk.reg.save')}" 
@@ -85,7 +88,10 @@ Copyright (C) 2009 Burak Oguz (barfan) <findikmail@gmail.com>
 					<mx:TextInput text="{userInfo.tsUsername}" id="tsUsername"/>
 				</mx:FormItem>
 				<mx:FormItem label="{resourceManager.getString('resources', 'btk.tsret.password')}">
-					<mx:TextInput text="{userInfo.tsPassword}" id="tsPassword" displayAsPassword="true"/>
+					<mx:TextInput text="{userInfo.tsPassword}" id="tsPassword" displayAsPassword="{!showp2.selected}"/>
+				</mx:FormItem>
+				<mx:FormItem>
+					<mx:CheckBox id="showp2" label="{resourceManager.getString('resources', 'btk.reg.showpass')}"/>
 				</mx:FormItem>
 				<mx:FormItem>
 					<mx:Button label="{resourceManager.getString('resources', 'btk.tsret.setcred')}" 

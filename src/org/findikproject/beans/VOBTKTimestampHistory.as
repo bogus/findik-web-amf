@@ -22,9 +22,7 @@ package org.findikproject.beans
 	public class VOBTKTimestampHistory
 	{
 		public var id:int;
-        public var startDate:Date;
-        public var endDate:Date;
+		public var name:String;
         public var logSize:Number;
-        public var status:Number;
 	}
 }
