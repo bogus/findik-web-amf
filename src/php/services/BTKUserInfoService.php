@@ -37,6 +37,7 @@ class BTKUserInfoService {
 		     $tmp->tsPassword = $rs->fields["ts_password"]; 
 		     $tmp->regUsername = $rs->fields["reg_username"];
 		     $tmp->regPassword = $rs->fields["reg_password"]; 
+		     $tmp->updateUrl = $rs->fields["update_url"]; 
 		     $ret[] = $tmp;
 		     $rs->MoveNext();
 	     }

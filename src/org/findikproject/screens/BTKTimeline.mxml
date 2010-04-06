@@ -30,6 +30,7 @@ Copyright (C) 2009 Burak Oguz (barfan) <findikmail@gmail.com>
 	</mx:Metadata>
 	<mx:Script>
 		<![CDATA[
+			import mx.rpc.events.ResultEvent;
 			import org.findikproject.beans.VOBTKGeneralInfo;
 			import mx.formatters.DateFormatter;
 			import org.findikproject.beans.VOTimelineItem;
@@ -49,11 +50,16 @@ Copyright (C) 2009 Burak Oguz (barfan) <findikmail@gmail.com>
 			import mx.collections.ArrayCollection;
 			import org.findikproject.components.RemoteDataObject;
 			import org.findikproject.util.RemoteDataObjectEvent;
+			import org.findikproject.beans.VOBTKUserInfo;
 			
 			[Bindable]
 			private var remoteDataObject:RemoteDataObject;
 			[Bindable]
 			private var remoteDataObjectGI:RemoteDataObject;
+			[Bindable]
+			private var remoteDataObjectUI:RemoteDataObject;
+			[Bindable]
+			private var userInfo:VOBTKUserInfo;
 			[Bindable]
 	        private var startDate : Date;
 	        [Bindable]
@@ -72,6 +78,12 @@ Copyright (C) 2009 Burak Oguz (barfan) <findikmail@gmail.com>
          	private var dateFormatter:DateFormatter;
          	[Bindable]
          	private var generalInfo:VOBTKGeneralInfo;
+         	[Bindable]
+         	private var licenseURL:String;
+         	[Bindable]
+         	private var licenseUsername:String;
+         	[Bindable]
+         	private var licensePassword:String;
          	
          	private static var aDay:Number = 24 * 60 * 60 * 1000;
          	
@@ -82,6 +94,10 @@ Copyright (C) 2009 Burak Oguz (barfan) <findikmail@gmail.com>
 				remoteDataObjectGI = new RemoteDataObject("BTKGeneralInfoService",null,null);
 				remoteDataObjectGI.addEventListener(RemoteDataObjectEvent.DATA_RECEIVED, generalInfoReceived);
 				remoteDataObjectGI.init();
+				remoteDataObjectUI = new RemoteDataObject("BTKUserInfoService",null,null);
+				remoteDataObjectUI.addEventListener(RemoteDataObjectEvent.DATA_RECEIVED, userInfoReceived);
+				remoteDataObjectUI.init();
+				
 				zoom = 100;
 				
 				dateFormatter = new DateFormatter();
@@ -100,10 +116,27 @@ Copyright (C) 2009 Burak Oguz (barfan) <findikmail@gmail.com>
 			private function timerHandler(e:TimerEvent):void{
 				remoteDataObject.getObject();
 		        remoteDataObjectGI.getObject();
+		        remoteDataObjectUI.getObject();
 		    }
 			
 			private function generalInfoReceived(event:RemoteDataObjectEvent):void {
 				generalInfo = (remoteDataObjectGI.remoteData as Array)[0] as VOBTKGeneralInfo;
+			}
+			
+			private function userInfoReceived(event:RemoteDataObjectEvent):void { 
+				var userData:ArrayCollection = new ArrayCollection(remoteDataObjectUI.remoteData as Array);
+				userInfo = userData.getItemAt(0) as VOBTKUserInfo;
+				var lastIndex:Number = userInfo.updateUrl.lastIndexOf("/");
+				licenseURL = userInfo.updateUrl.substring(0, lastIndex + 1) + "btk-license.php";
+				licenseUsername = userInfo.regUsername;
+				licensePassword = userInfo.regPassword;
+				httpServiceLicense.send();
+			}
+			private function resultHandlerLicense(event:ResultEvent):void {
+			 	 var valid:Number = event.result.Result.Valid as Number;
+			 	 var curDate:Number = event.result.Result.CurDate as Number;
+			 	 serverDate.text = dateFormatter.format(new Date(curDate));
+			 	 validDate.text = dateFormatter.format(new Date(valid));
 			}
 			
 			private function dataReceived(event:RemoteDataObjectEvent):void {
@@ -306,11 +339,18 @@ Copyright (C) 2009 Burak Oguz (barfan) <findikmail@gmail.com>
 	        
 		]]>
 	</mx:Script>
-
+	<mx:HTTPService id="httpServiceLicense" url="{licenseURL}"
+		result="resultHandlerLicense(event)" method="POST" showBusyCursor="true"
+		fault="Alert.show('Error')">
+		<mx:request>
+			<username>{licenseUsername}</username>
+			<password>{licensePassword}</password>
+		</mx:request>
+	</mx:HTTPService>
 	<mx:HBox width="100%">
 		<mx:Form>
 			<mx:FormItem label="{resourceManager.getString('resources', 'btk.timeline.date')}">
-				<mx:Label text="{dateFormatter.format(new Date())}"/>
+				<mx:Label id="serverDate" />
 			</mx:FormItem>
 			<mx:FormItem label="{resourceManager.getString('resources', 'btk.timeline.lastdbupdate')}">
 				<mx:Label text="{generalInfo.updateName}"/>
@@ -320,6 +360,9 @@ Copyright (C) 2009 Burak Oguz (barfan) <findikmail@gmail.com>
 			</mx:FormItem>
 			<mx:FormItem label="{resourceManager.getString('resources', 'btk.timeline.clientcount')}">
 				<mx:Label text="{generalInfo.currentClient.toString()}"/>
+			</mx:FormItem>
+			<mx:FormItem label="{resourceManager.getString('resources', 'btk.timeline.licensevalid')}">
+				<mx:Label id="validDate" />
 			</mx:FormItem>
 		</mx:Form>
 		<mx:Spacer width="35%" />

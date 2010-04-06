@@ -21,5 +21,6 @@ class VOBTKUserInfo {
      public $tsPassword; 
      public $regUsername;
      public $regPassword; 
+     public $updateUrl; 
 }
 ?>

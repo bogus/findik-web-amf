@@ -25,5 +25,6 @@ package org.findikproject.beans
         public var tsPassword:String;
         public var regUsername:String;
         public var regPassword:String;
+        public var updateUrl:String;
 	}
 }

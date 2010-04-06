@@ -22,6 +22,8 @@ Copyright (C) 2009 Burak Oguz (barfan) <findikmail@gmail.com>
 	creationComplete="init()">
 	<mx:Script>
 		<![CDATA[
+			import mx.controls.Alert;
+			import mx.rpc.events.ResultEvent;
 			import org.findikproject.beans.VOACLFilterParam;
 			import mx.collections.ArrayCollection;
 			import org.findikproject.beans.VOBTKUserInfo;
@@ -32,6 +34,12 @@ Copyright (C) 2009 Burak Oguz (barfan) <findikmail@gmail.com>
 			private var remoteDataObject:RemoteDataObject;
 			[Bindable]
 			private var userInfo:VOBTKUserInfo;
+			[Bindable]
+         	private var licenseURL:String;
+         	[Bindable]
+         	private var licenseUsername:String;
+         	[Bindable]
+         	private var licensePassword:String;
 			
 			private function init():void {
 				remoteDataObject = new RemoteDataObject("BTKUserInfoService",null,null);
@@ -53,14 +61,30 @@ Copyright (C) 2009 Burak Oguz (barfan) <findikmail@gmail.com>
 			}
 			
 			private function testUserInfo():void {
-				userInfo.tsUsername = tsUsername.text;
-				userInfo.tsPassword = tsPassword.text;  				
-				userInfo.regUsername = regUsername.text;
-				userInfo.regPassword = regPassword.text;
-				remoteDataObject.getRemoteObject().testUserInfo(userInfo);	
+				var lastIndex:Number = userInfo.updateUrl.lastIndexOf("/");
+				licenseURL = userInfo.updateUrl.substring(0, lastIndex + 1) + "btk-license.php";
+				licenseUsername = regUsername.text;
+				licensePassword = regPassword.text;
+				httpServiceLicense.send();
+			}
+			
+			private function resultHandlerLicense(event:ResultEvent):void {
+				if((event.result is String) && (event.result as String).length == 0) {
+					Alert.show(resourceManager.getString('resources', 'btk.reg.wrongcred'));
+				} else {
+					Alert.show(resourceManager.getString('resources', 'btk.reg.correctcred'));
+				}
 			}
 		]]>
 	</mx:Script>
+	<mx:HTTPService id="httpServiceLicense" url="{licenseURL}"
+		result="resultHandlerLicense(event)" method="POST" showBusyCursor="true"
+		fault="Alert.show('Error')">
+		<mx:request>
+			<username>{licenseUsername}</username>
+			<password>{licensePassword}</password>
+		</mx:request>
+	</mx:HTTPService>
 	<mx:VBox paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10">
 		<mx:HBox>
 			<mx:Form defaultButton="{updateRegButton}">
